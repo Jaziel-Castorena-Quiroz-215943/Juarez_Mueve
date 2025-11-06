@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <title>Juárez Mueve - Mapa</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="{% static 'transporte/css/mapa.css' %}">
+
+
+</head>
+
+<body class="bg-[#F2E8D5] h-screen flex">
+
+        <!-- SIDEBAR -->
+        <aside class="bg-white border-r shadow-sm flex flex-col justify-between
+                w-64 sm:w-56 xs:w-20 transition-all duration-200">
+
+        <div>
+            <!-- Logo + Título -->
+            <div class="p-4 flex items-center xs:flex-col xs:space-y-1 xs:text-center space-x-3 xs:space-x-0">
+                <div class="w-10 h-10 rounded-full bg-[#3AB54A]"></div>
+
+                <div class="xs:hidden">
+                    <h1 class="font-bold text-lg">Juárez Mueve</h1>
+                    <p class="text-xs text-gray-500">Smart City Desktop</p>
+                </div>
+            </div>
+
+            <!-- Navegación -->
+            <nav class="mt-4 space-y-1">
+                <a href="#" class="flex items-center px-4 py-2 bg-[#3AB54A] text-white font-medium">
+                    <span class="xs:hidden">Mapa Principal</span>
+                    <span class="xs:inline hidden">🗺️</span>
+                </a>
+
+                <a href="#" class="flex items-center px-4 py-2 hover:bg-gray-100">
+                    <span class="xs:hidden">Rutas de Transporte</span>
+                    <span class="xs:inline hidden">🚌</span>
+                </a>
+
+                <a href="#" class="flex items-center px-4 py-2 hover:bg-gray-100">
+                    <span class="xs:hidden">Recolección de Basura</span>
+                    <span class="xs:inline hidden">🚛</span>
+                </a>
+
+                <a href="#" class="flex items-center px-4 py-2 hover:bg-gray-100">
+                    <span class="xs:hidden">Panel Administrativo</span>
+                    <span class="xs:inline hidden">⚙️</span>
+                </a>
+            </nav>
+        </div>
+
+        <!-- Perfil -->
+        <div class="p-4 border-t">
+            <div class="flex items-center space-x-3 xs:flex-col xs:space-x-0 xs:space-y-1 text-center">
+                <div class="w-10 h-10 rounded-full bg-gray-300"></div>
+
+                <div class="xs:hidden">
+                    <p class="font-medium">Adrian Vásquez</p>
+                    <p class="text-xs text-gray-500">carlos1vasquez@gmail...</p>
+                </div>
+            </div>
+
+            <a href="#" class="text-sm text-gray-600 mt-2 inline-block xs:hidden">Perfil</a>
+        </div>
+
+    </aside>
+
+    <!-- CONTENIDO -->
+    <main class="flex-1 p-6 space-y-4 overflow-hidden">
+
+        <!-- Header -->
+        <header class="bg-white rounded-lg p-4 shadow-sm flex justify-between items-center">
+            <div>
+                <h2 class="text-2xl font-semibold">Mapa de Ciudad Juárez</h2>
+                <p class="text-sm text-gray-500">Seguimiento en tiempo real de transporte y recolección</p>
+            </div>
+
+            <div class="flex space-x-2">
+                <button class="px-4 py-2 border rounded-lg">📍 Mi Ubicación</button>
+                <button class="px-4 py-2 bg-[#3AB54A] text-white rounded-lg">Actualizar</button>
+            </div>
+        </header>
+
+        <!-- Buscador + Filtros -->
+        <div class="bg-white p-4 rounded-lg shadow-sm flex items-center space-x-2">
+            <input type="text" class="flex-1 border rounded-lg px-3 py-2" placeholder="Buscar por unidad, ruta o colonia...">
+            <button class="px-4 py-2 bg-[#3AB54A] text-white rounded-lg">Buscar</button>
+            <button class="px-4 py-2 bg-blue-500 text-white rounded-lg">Todos</button>
+            <button class="px-4 py-2 bg-green-500 text-white rounded-lg">Transporte</button>
+            <button class="px-4 py-2 bg-yellow-500 text-white rounded-lg">Basura</button>
+        </div>
+
+        <!-- MAP + INFO PANEL -->
+        <div class="flex gap-4 h-[calc(100vh-200px)]">
+
+            <!-- Mapa -->
+            <div class="flex-1 rounded-lg overflow-hidden shadow-lg bg-gray-300" id="map">
+                <!-- Aquí pondremos Leaflet -->
+            </div>
+
+            <!-- Panel lateral derecho -->
+            <div id="panel-detalles" class="w-72 bg-white rounded-lg shadow p-4">
+                <h3 class="font-semibold text-lg mb-3">Información</h3>
+                <p class="text-sm text-gray-500 mb-6">Selecciona un vehículo en el mapa para ver sus detalles.</p>
+
+                <h4 class="font-semibold text-sm mb-2">Estadísticas en vivo</h4>
+
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <span>Transporte activo</span>
+                        <span class="font-bold text-green-600">6</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Recolección activa</span>
+                        <span class="font-bold text-yellow-600">5</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+<script src="{% static 'transporte/js/mapa.js' %}"></script>
+</body>
+</html>

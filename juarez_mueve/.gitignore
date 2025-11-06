@@ -1,0 +1,61 @@
+# === Python ===
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Entorno virtual
+venv/
+env/
+myenv/
+.venv/
+
+# Archivos temporales / logs
+*.log
+*.pot
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+*.db
+
+# Configuración local
+*.env
+.env.*
+
+# === Django ===
+# Archivos de compilación estáticos generados
+staticfiles/
+
+# Archivos de migración (opcional para desarrollo inicial, pero NO borrar si ya está en producción)
+# Puedes dejar los migrations excepto __pycache__. Así:
+*/migrations/__pycache__/
+*/migrations/*.pyc
+
+# Bases de datos locales (si usas SQLite)
+db.sqlite3
+
+# === VSCode ===
+.vscode/
+.settings/
+*.code-workspace
+
+# === Sistema operativo ===
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# === Node (si en algún punto integran frontend con npm) ===
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# === Otros ===
+*~

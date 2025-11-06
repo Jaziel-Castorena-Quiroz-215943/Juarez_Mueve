@@ -1,0 +1,11 @@
+#map {
+    width: 100%;
+    height: 100%;
+    min-height: 500px; /* importante */
+}
+
+/* Asegura que Leaflet haga su render correctamente */
+.leaflet-container {
+    height: 100% !important;
+    width: 100% !important;
+}
