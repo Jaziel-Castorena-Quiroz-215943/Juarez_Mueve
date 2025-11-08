@@ -16,9 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from transporte.views import mapa_principal
+from juarez_mueve.views import index
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('transporte.urls')),  # así /api/... queda accesible
+    path('', index, name='index'),
+    path('transporte/', include('transporte.urls')),
 ]
+

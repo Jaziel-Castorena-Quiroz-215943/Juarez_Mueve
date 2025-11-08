@@ -1,0 +1,132 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Juárez Mueve</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-50 text-gray-800">
+
+  <!-- HERO CON CARRUSEL DE FONDO + FADE -->
+<div id="hero"
+     class="relative w-full h-screen bg-cover bg-center flex items-center justify-start transition-opacity duration-[1500ms] ease-in-out opacity-100"
+     style="background-image: url('{% static 'img/jrz.jpg' %}');"
+     data-img1="{% static 'img/jrz.jpg' %}"
+     data-img2="{% static 'img/jrz2.jpg' %}"
+     data-img3="{% static 'img/jrz3.jpg' %}">
+
+    <!-- Capa oscura -->
+    <div class="absolute inset-0 bg-gradient-to-r from-black/70 to-black/30"></div>
+
+    <!-- Contenido -->
+    <div class="relative z-10 px-10 md:px-24 text-white max-w-xl">
+        <h1 class="text-5xl md:text-6xl font-bold mb-6 leading-tight drop-shadow-lg">
+            Juárez Mueve
+        </h1>
+
+        <p class="text-lg md:text-2xl mb-8 text-gray-200 drop-shadow-lg">
+            Movilidad Urbana Inteligente para Ciudad Juárez.
+            <br>
+            Transparencia, eficiencia y servicio para la comunidad.
+        </p>
+
+        <div class="flex flex-wrap gap-4">
+            <a href="/transporte/" class="bg-green-500 hover:bg-green-600 px-8 py-3 rounded-lg font-semibold transition shadow-lg">
+                Comenzar Ahora
+            </a>
+
+            <a href="/transporte/mapa/" class="bg-white text-green-700 hover:bg-gray-100 px-8 py-3 rounded-lg font-semibold transition shadow-lg">
+                Ver Mapa
+            </a>
+        </div>
+    </div>
+
+</div>
+
+
+
+    <!-- Sección dos servicios -->
+    <section class="text-center py-20 px-6">
+        <h2 class="text-3xl font-semibold mb-2">Una Plataforma, Dos Servicios</h2>
+        <p class="text-gray-600 mb-12">Conectando tecnología, ciudad y comunidad para una movilidad inteligente.</p>
+
+        <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            
+            <!-- Tarjeta Transporte -->
+            <div class="border rounded-xl p-6 hover:shadow-lg transition bg-white">
+                <h3 class="text-xl font-semibold mb-2">Transporte Público</h3>
+                <p class="text-gray-600 mb-4">
+                    Consulta en tiempo real las rutas, horarios y ubicación de las unidades urbanas.
+                </p>
+                <a href="/transporte/" class="text-green-600 font-semibold hover:underline">Acceder →</a>
+            </div>
+
+            <!-- Tarjeta Basura -->
+            <div class="border rounded-xl p-6 hover:shadow-lg transition bg-white">
+                <h3 class="text-xl font-semibold mb-2">Recolección de Basura</h3>
+                <p class="text-gray-600 mb-4">
+                    Conoce el recorrido y programación del servicio de recolección domiciliaria.
+                </p>
+                <a href="/basura/" class="text-green-600 font-semibold hover:underline">Acceder →</a>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Beneficios -->
+    <section class="bg-amber-50 py-20 px-6">
+        <h2 class="text-center text-3xl font-semibold mb-10">Beneficios para Todos</h2>
+
+        <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+
+            <div class="p-6 bg-white border rounded-xl shadow-sm text-center">
+                <p class="font-semibold mb-2">Geolocalización Precisa</p>
+                <p class="text-gray-600 text-sm">Conoce la ubicación exacta de las unidades.</p>
+            </div>
+
+            <div class="p-6 bg-white border rounded-xl shadow-sm text-center">
+                <p class="font-semibold mb-2">Mayor Eficiencia</p>
+                <p class="text-gray-600 text-sm">Reducción de tiempos de espera.</p>
+            </div>
+
+            <div class="p-6 bg-white border rounded-xl shadow-sm text-center">
+                <p class="font-semibold mb-2">Transparencia</p>
+                <p class="text-gray-600 text-sm">Datos abiertos para la ciudadanía.</p>
+            </div>
+
+            <div class="p-6 bg-white border rounded-xl shadow-sm text-center">
+                <p class="font-semibold mb-2">Multiplataforma</p>
+                <p class="text-gray-600 text-sm">Accesible desde cualquier dispositivo.</p>
+            </div>
+
+            <div class="p-6 bg-white border rounded-xl shadow-sm text-center">
+                <p class="font-semibold mb-2">Datos en Tiempo Real</p>
+                <p class="text-gray-600 text-sm">Actualizaciones al segundo.</p>
+            </div>
+
+            <div class="p-6 bg-white border rounded-xl shadow-sm text-center">
+                <p class="font-semibold mb-2">Panel Administrativo</p>
+                <p class="text-gray-600 text-sm">Visualización y control para gestión municipal.</p>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="bg-gradient-to-r from-green-600 to-teal-500 text-white text-center py-20 px-6">
+        <h2 class="text-3xl font-semibold mb-4">¿Listo para Mejorar tu Movilidad?</h2>
+        <p class="mb-8 text-lg">Únete a miles de juarenses que ya utilizan Juárez Mueve.</p>
+        <a href="/registro/" class="bg-white text-green-700 hover:bg-gray-100 px-8 py-3 rounded-lg text-lg font-semibold transition">
+            Crear Cuenta Gratis
+        </a>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-300 text-center py-6">
+        © 2025 Juárez Mueve — Movilidad Inteligente para Ciudad Juárez.
+    </footer>
+<script src="{% static 'js/index.js' %}"></script>
+</body>
+</html>
