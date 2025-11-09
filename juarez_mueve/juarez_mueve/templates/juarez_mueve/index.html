@@ -4,7 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <title>Juárez Mueve</title>
+     <link rel="icon" type="image/png" href="{% static 'img/logo.jpg' %}">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
 <body class="bg-gray-50 text-gray-800">
@@ -55,22 +57,40 @@
         <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             
             <!-- Tarjeta Transporte -->
-            <div class="border rounded-xl p-6 hover:shadow-lg transition bg-white">
-                <h3 class="text-xl font-semibold mb-2">Transporte Público</h3>
-                <p class="text-gray-600 mb-4">
+            <div class="border rounded-xl p-6 hover:shadow-lg transition bg-white flex flex-col items-center text-center gap-4">
+                
+                <!-- Ícono centrado -->
+                <div class="flex justify-center items-center w-14 h-14 rounded-xl shadow-md 
+                            bg-gradient-to-br from-green-400 to-blue-500">
+                    <i data-lucide="bus" class="text-white w-7 h-7"></i>
+                </div>
+
+                <h3 class="text-xl font-semibold">Transporte Público</h3>
+                <p class="text-gray-600 text-sm">
                     Consulta en tiempo real las rutas, horarios y ubicación de las unidades urbanas.
                 </p>
-                <a href="/transporte/" class="text-green-600 font-semibold hover:underline">Acceder →</a>
+
+                <a href="/login/" class="text-green-600 font-semibold hover:underline">Acceder →</a>
             </div>
 
+
             <!-- Tarjeta Basura -->
-            <div class="border rounded-xl p-6 hover:shadow-lg transition bg-white">
-                <h3 class="text-xl font-semibold mb-2">Recolección de Basura</h3>
-                <p class="text-gray-600 mb-4">
+            <div class="border rounded-xl p-6 hover:shadow-lg transition bg-white flex flex-col items-center text-center gap-4">
+                
+                <!-- Ícono centrado -->
+                <div class="flex justify-center items-center w-14 h-14 rounded-xl shadow-md 
+                            bg-gradient-to-br from-orange-400 to-red-500">
+                    <i data-lucide="trash" class="text-white w-7 h-7"></i>
+                </div>
+
+                <h3 class="text-xl font-semibold">Recolección de Basura</h3>
+                <p class="text-gray-600 text-sm">
                     Conoce el recorrido y programación del servicio de recolección domiciliaria.
                 </p>
-                <a href="/basura/" class="text-green-600 font-semibold hover:underline">Acceder →</a>
+
+                <a href="/login/" class="text-green-600 font-semibold hover:underline">Acceder →</a>
             </div>
+
 
         </div>
     </section>
@@ -118,7 +138,7 @@
     <section class="bg-gradient-to-r from-green-600 to-teal-500 text-white text-center py-20 px-6">
         <h2 class="text-3xl font-semibold mb-4">¿Listo para Mejorar tu Movilidad?</h2>
         <p class="mb-8 text-lg">Únete a miles de juarenses que ya utilizan Juárez Mueve.</p>
-        <a href="/registro/" class="bg-white text-green-700 hover:bg-gray-100 px-8 py-3 rounded-lg text-lg font-semibold transition">
+        <a href="{% url 'signup' %}" class="bg-white text-green-700 hover:bg-gray-100 px-8 py-3 rounded-lg text-lg font-semibold transition">
             Crear Cuenta Gratis
         </a>
     </section>
@@ -128,5 +148,6 @@
         © 2025 Juárez Mueve — Movilidad Inteligente para Ciudad Juárez.
     </footer>
 <script src="{% static 'js/index.js' %}"></script>
+<script>lucide.createIcons();</script>
 </body>
 </html>

@@ -1,0 +1,68 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Iniciar Sesión | Juárez Mueve</title>
+    <link rel="icon" type="image/png" href="{% static 'img/logo.jpg' %}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+</head>
+
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+<div class="bg-white shadow-lg rounded-2xl p-10 w-full max-w-md">
+
+    <!-- Logo -->
+    <div class="flex justify-center mb-6">
+        <img src="{% static 'img/logo.jpg' %}" class="w-20 h-20 rounded-full shadow" alt="Logo">
+    </div>
+
+    <h2 class="text-2xl font-bold text-center mb-1">Welcome to Juárez Mueve</h2>
+    <p class="text-center text-gray-600 mb-6">Sign in to continue</p>
+
+    <!-- Google Sign-in (no funcional aún, solo visual) -->
+    <button class="w-full flex items-center justify-center gap-2 border py-3 rounded-lg hover:bg-gray-50 transition">
+        <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5">
+        Continue with Google
+    </button>
+
+    <div class="flex items-center my-6">
+        <hr class="flex-grow border-gray-300">
+        <span class="px-4 text-gray-500 text-sm">OR</span>
+        <hr class="flex-grow border-gray-300">
+    </div>
+
+    <form method="POST" class="space-y-4">
+        {% csrf_token %}
+
+        <div>
+            <label class="text-sm text-gray-600">Email</label>
+            <input name="email" type="email" class="w-full border rounded-lg px-4 py-3 mt-1 focus:ring-2 focus:ring-green-500 outline-none" placeholder="you@example.com" required>
+        </div>
+
+        <div>
+            <label class="text-sm text-gray-600">Password</label>
+            <input name="password" type="password" class="w-full border rounded-lg px-4 py-3 mt-1 focus:ring-2 focus:ring-green-500 outline-none" placeholder="••••••••" required>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <p class="text-red-500 text-sm text-center">{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+
+        <button type="submit" class="w-full bg-gray-900 hover:bg-black text-white py-3 rounded-lg font-semibold transition">
+            Sign in
+        </button>
+    </form>
+
+    <div class="flex justify-between text-sm text-gray-600 mt-6">
+        <a href="#" class="hover:underline">Forgot password?</a>
+        <a href="{% url 'signup' %}" class="hover:underline font-semibold">Sign up</a>
+    </div>
+
+</div>
+
+</body>
+</html>
