@@ -12,7 +12,6 @@
 
 <div class="bg-white rounded-2xl shadow-xl overflow-hidden w-full max-w-4xl flex">
 
-    <!-- Columna Izquierda -->
     <div class="hidden md:flex flex-col justify-center items-center bg-gradient-to-br from-green-500 to-teal-500 text-white w-1/2 p-10">
         <img src="{% static 'img/logo.jpg' %}" class="w-40 h-40 rounded-full shadow" alt="Logo">
         <h2 class="text-3xl font-bold mb-2">Juárez Mueve</h2>
@@ -21,12 +20,10 @@
         </p>
     </div>
 
-    <!-- Columna Derecha -->
     <div class="w-full md:w-1/2 p-10">
         
         <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Crear Cuenta</h2>
 
-        <!-- Google -->
         <button class="w-full flex items-center justify-center gap-3 border py-2 rounded-lg hover:bg-gray-50 transition">
             <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5">
             <span class="text-gray-700 font-medium">Registrarse con Google</span>
@@ -41,56 +38,48 @@
         <form method="POST">
             {% csrf_token %}
 
-            <!-- Nombre -->
             <label class="block mb-3">
                 <span class="text-gray-700">Nombre</span>
                 <input type="text" name="first_name" required
                 class="mt-1 w-full px-4 py-2 border rounded-lg focus:ring-green-500 focus:outline-none">
             </label>
 
-            <!-- Apellidos -->
             <label class="block mb-3">
                 <span class="text-gray-700">Apellidos</span>
                 <input type="text" name="last_name" required
                 class="mt-1 w-full px-4 py-2 border rounded-lg focus:ring-green-500 focus:outline-none">
             </label>
 
-            <!-- Usuario -->
             <label class="block mb-3">
                 <span class="text-gray-700">Nombre de Usuario</span>
                 <input type="text" name="username" required
                 class="mt-1 w-full px-4 py-2 border rounded-lg focus:ring-green-500 focus:outline-none">
             </label>
 
-            <!-- Email -->
             <label class="block mb-3">
                 <span class="text-gray-700">Correo Electrónico</span>
                 <input type="email" name="email" required
                 class="mt-1 w-full px-4 py-2 border rounded-lg focus:ring-green-500 focus:outline-none">
             </label>
 
-            <!-- Teléfono -->
             <label class="block mb-3">
                 <span class="text-gray-700">Teléfono (opcional)</span>
                 <input type="tel" name="phone"
                 class="mt-1 w-full px-4 py-2 border rounded-lg focus:ring-green-500 focus:outline-none">
             </label>
 
-            <!-- Colonia -->
             <label class="block mb-3">
                 <span class="text-gray-700">Colonia (opcional)</span>
                 <input type="text" name="neighborhood"
                 class="mt-1 w-full px-4 py-2 border rounded-lg focus:ring-green-500 focus:outline-none">
             </label>
 
-            <!-- Contraseña -->
             <label class="block mb-3">
                 <span class="text-gray-700">Contraseña</span>
                 <input type="password" name="password1" required
                 class="mt-1 w-full px-4 py-2 border rounded-lg focus:ring-green-500 focus:outline-none">
             </label>
 
-            <!-- Confirmar Contraseña -->
             <label class="block mb-6">
                 <span class="text-gray-700">Confirmar Contraseña</span>
                 <input type="password" name="password2" required

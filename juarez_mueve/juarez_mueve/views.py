@@ -21,7 +21,7 @@ def index(request):
 
 def login_view(request):
     if request.method == "POST":
-        user_input = request.POST.get("email")  # campo del formulario
+        user_input = request.POST.get("email")  
         password = request.POST.get("password")
 
         # Primero intentamos buscar por username o email
