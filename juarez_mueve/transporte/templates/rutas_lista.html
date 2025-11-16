@@ -1,0 +1,83 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Rutas | Juárez Mueve</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#F2E8D5] min-h-screen">
+
+<div class="flex">
+    <aside class="bg-white border-r shadow-sm w-64 p-4">
+        <h1 class="font-bold text-lg mb-1">Juárez Mueve</h1>
+        <p class="text-xs text-gray-500 mb-4">Panel Administrativo</p>
+        <nav class="space-y-1 text-sm">
+            <a href="{% url 'mapa' %}" class="block px-3 py-2 rounded hover:bg-gray-100">🗺️ Mapa</a>
+            <a href="{% url 'unidades_lista' %}" class="block px-3 py-2 rounded hover:bg-gray-100">🚌 Unidades</a>
+            <a href="{% url 'rutas_lista' %}" class="block px-3 py-2 rounded bg-[#3AB54A] text-white">📍 Rutas</a>
+        </nav>
+    </aside>
+
+    <main class="flex-1 p-8 space-y-6">
+
+        <header class="flex justify-between items-center">
+            <div>
+                <h2 class="text-2xl font-semibold">Rutas</h2>
+                <p class="text-sm text-gray-600">Gestión de rutas de transporte.</p>
+            </div>
+            <a href="{% url 'rutas_crear' %}"
+               class="px-4 py-2 bg-[#3AB54A] text-white rounded-lg shadow hover:bg-green-700 text-sm">
+                + Nueva ruta
+            </a>
+        </header>
+
+        {% if messages %}
+            <div>
+                {% for message in messages %}
+                    <p class="text-sm text-{{ message.tags }}-600">{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <section class="bg-white rounded-xl shadow p-4">
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm">
+                    <thead>
+                        <tr class="border-b text-left text-gray-500">
+                            <th class="py-2 pr-4">Nombre</th>
+                            <th class="py-2 pr-4">Descripción</th>
+                            <th class="py-2 pr-4 text-right">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in rutas %}
+                            <tr class="border-b last:border-0">
+                                <td class="py-2 pr-4 font-medium">{{ r.nombre }}</td>
+                                <td class="py-2 pr-4 text-gray-600">
+                                    {{ r.descripcion|default:"-" }}
+                                </td>
+                                <td class="py-2 pr-4 text-right">
+                                    <a href="{% url 'rutas_editar' r.pk %}"
+                                       class="text-blue-600 text-xs hover:underline">
+                                        Editar
+                                    </a>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="3" class="py-4 text-center text-gray-500">
+                                    No hay rutas registradas.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+</body>
+</html>
