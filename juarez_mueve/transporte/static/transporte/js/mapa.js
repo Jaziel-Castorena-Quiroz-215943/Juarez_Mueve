@@ -144,6 +144,40 @@ function buscarUnidad() {
     }
 }
 
+let rutasLayer = L.layerGroup().addTo(map);
+
+function cargarRutas() {
+    fetch('/transporte/api/rutas_mapa/')
+        .then(res => res.json())
+        .then(data => {
+            rutasLayer.clearLayers();
+
+            data.forEach(ruta => {
+                if (!ruta.puntos || ruta.puntos.length === 0) return;
+
+                // Ordenamos puntos por "orden" por si acaso
+                const puntosOrdenados = ruta.puntos.sort(
+                    (a, b) => a.orden - b.orden
+                );
+
+                const coords = puntosOrdenados.map(p => [p.latitud, p.longitud]);
+
+                // Puedes cambiar color según tipo de ruta cuando tengas ese campo
+                const polyline = L.polyline(coords, {
+                    color: '#0077B6', // azul tipo SIT
+                    weight: 5,
+                    opacity: 0.8
+                }).addTo(rutasLayer);
+
+                // Tooltip con el nombre de la ruta
+                polyline.bindTooltip(ruta.nombre, { sticky: true });
+            });
+        })
+        .catch(err => {
+            console.error("Error cargando rutas:", err);
+        });
+}
+
 // 10. Mi ubicación
 function irAMiUbicacion() {
     if (!navigator.geolocation) {
@@ -168,6 +202,23 @@ function irAMiUbicacion() {
     );
 }
 
+function cargarRutas() {
+    fetch("/transporte/api/rutas/")
+        .then(res => res.json())
+        .then(data => {
+            data.rutas.forEach(r => {
+                const puntos = r.puntos.map(p => [p.latitud, p.longitud]);
+
+                L.polyline(puntos, {
+                    color: "#1d4ed8",
+                    weight: 4,
+                    opacity: 0.7
+                }).addTo(map);
+            });
+        })
+        .catch(err => console.error("Error rutas:", err));
+}
+
 // 11. Enlazar eventos a los botones
 document.addEventListener('DOMContentLoaded', () => {
     const btnTodos = document.getElementById('btn-todos');
@@ -186,4 +237,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Cargar la primera vez
     cargarUnidades();
+    cargarRutas();
 });
+

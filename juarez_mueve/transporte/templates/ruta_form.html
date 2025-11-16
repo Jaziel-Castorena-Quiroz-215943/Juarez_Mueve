@@ -1,0 +1,54 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{% if modo == 'editar' %}Editar{% else %}Nueva{% endif %} ruta | Juárez Mueve</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#F2E8D5] min-h-screen">
+
+<div class="flex">
+    <aside class="bg-white border-r shadow-sm w-64 p-4">
+        <h1 class="font-bold text-lg mb-1">Juárez Mueve</h1>
+        <p class="text-xs text-gray-500 mb-4">Panel Administrativo</p>
+        <nav class="space-y-1 text-sm">
+            <a href="{% url 'rutas_lista' %}" class="block px-3 py-2 rounded hover:bg-gray-100">
+                ← Volver a rutas
+            </a>
+        </nav>
+    </aside>
+
+    <main class="flex-1 p-8">
+        <h2 class="text-2xl font-semibold mb-4">
+            {% if modo == 'editar' %}Editar ruta{% else %}Nueva ruta{% endif %}
+        </h2>
+
+        <form method="post" class="bg-white rounded-xl shadow p-6 max-w-xl space-y-4">
+            {% csrf_token %}
+
+            <div>
+                <label class="block text-sm font-medium mb-1">Nombre</label>
+                {{ form.nombre }}
+                {% if form.nombre.errors %}
+                    <p class="text-xs text-red-600">{{ form.nombre.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium mb-1">Descripción</label>
+                {{ form.descripcion }}
+            </div>
+
+            <div class="pt-4">
+                <button type="submit"
+                        class="px-4 py-2 bg-[#3AB54A] text-white rounded-lg shadow hover:bg-green-700 text-sm">
+                    Guardar cambios
+                </button>
+            </div>
+        </form>
+    </main>
+</div>
+
+</body>
+</html>

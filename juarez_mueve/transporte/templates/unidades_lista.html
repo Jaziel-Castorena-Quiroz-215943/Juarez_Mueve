@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2 class="mb-3">Gestión de Unidades</h2>
+
+<div class="d-flex mb-3">
+    <a class="btn btn-primary me-3" href="{% url 'crear_unidad' %}">+ Nueva unidad</a>
+
+    <form method="GET">
+        <select name="tipo" onchange="this.form.submit()" class="form-select w-auto">
+            <option value="todas" {% if filtro == 'todas' %}selected{% endif %}>Todas</option>
+            <option value="transporte" {% if filtro == 'transporte' %}selected{% endif %}>Transporte</option>
+            <option value="basura" {% if filtro == 'basura' %}selected{% endif %}>Basura</option>
+        </select>
+    </form>
+</div>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Identificador</th>
+            <th>Tipo</th>
+            <th>Ruta</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for u in unidades %}
+        <tr>
+            <td>{{ u.identificador }}</td>
+            <td>{{ u.get_tipo_display }}</td>
+            <td>{{ u.ruta_asignada }}</td>
+            <td>
+                {% if u.activa %}
+                    <span class="text-success fw-bold">Activa</span>
+                {% else %}
+                    <span class="text-danger fw-bold">Inactiva</span>
+                {% endif %}
+            </td>
+            <td>
+                <a href="{% url 'editar_unidad' u.id %}" class="btn btn-sm btn-warning">Editar</a>
+                <a href="{% url 'toggle_unidad' u.id %}" class="btn btn-sm btn-secondary">Activar/Desactivar</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

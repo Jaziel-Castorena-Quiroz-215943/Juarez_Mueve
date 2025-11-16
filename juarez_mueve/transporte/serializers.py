@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Unidad, UbicacionTiempoReal
+from .models import Unidad, UbicacionTiempoReal, PuntoRuta, Ruta
 
 class UbicacionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -22,3 +22,16 @@ class UnidadSerializer(serializers.ModelSerializer):
             'longitud': ultima.longitud,
             'timestamp': ultima.timestamp
         }
+
+class PuntoRutaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PuntoRuta
+        fields = ("latitud", "longitud", "orden")
+
+
+class RutaMapaSerializer(serializers.ModelSerializer):
+    puntos = PuntoRutaSerializer(many=True)
+
+    class Meta:
+        model = Ruta
+        fields = ("id", "nombre", "puntos")
