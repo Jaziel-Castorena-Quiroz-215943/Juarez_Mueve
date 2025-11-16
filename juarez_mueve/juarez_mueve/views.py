@@ -46,41 +46,39 @@ def login_view(request):
 
 def signup(request):
     if request.method == "POST":
-        first_name = request.POST.get("first_name")
-        last_name = request.POST.get("last_name")
-        email = request.POST.get("email")
-        username = request.POST.get("username")
-        phone = request.POST.get("phone")
-        neighborhood = request.POST.get("neighborhood")
-        password1 = request.POST.get("password1")
-        password2 = request.POST.get("password2")
 
-        # Validaciones básicas
-        if password1 != password2:
+        # Datos
+        fields = ["first_name", "last_name", "email", "username",
+                  "phone", "neighborhood", "password1", "password2"]
+        data = {f: request.POST.get(f) for f in fields}
+
+        # Validaciones
+        if data["password1"] != data["password2"]:
             messages.error(request, "Las contraseñas no coinciden.")
             return redirect('signup')
-        
-        if User.objects.filter(username=username).exists():
+
+        if User.objects.filter(username=data["username"]).exists():
             messages.error(request, "Ese usuario ya está registrado.")
             return redirect('signup')
 
-        if User.objects.filter(email=email).exists():
+        if User.objects.filter(email=data["email"]).exists():
             messages.error(request, "Ese correo ya está registrado.")
             return redirect('signup')
 
         # Crear usuario
         user = User.objects.create_user(
-            username=username,
-            password=password1,
-            email=email,
-            first_name=first_name,
-            last_name=last_name
+            username=data["username"],
+            password=data["password1"],
+            email=data["email"],
+            first_name=data["first_name"],
+            last_name=data["last_name"]
         )
 
-        # Guardar perfil
+        # Crear perfil
         profile = Profile.objects.get(user=user)
-        profile.telefono = phone
-        profile.colonia = neighborhood
+        profile.telefono = data["phone"]
+        profile.colonia = data["neighborhood"]
+        profile.rol = "CIUDADANO"  # 🔒 seguridad
         profile.save()
 
         messages.success(request, "Cuenta creada correctamente. Ahora inicia sesión.")

@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'juarez_mueve',
+    'juarez_mueve.apps.JuarezMueveConfig',
     'transporte',
     'basura',
     'panel',

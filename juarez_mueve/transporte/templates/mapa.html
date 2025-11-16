@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 {% load static %}
-<html lang="es">
+<html lang="es" x-data="{ openLogout: false }">
 <head>
     <meta charset="UTF-8">
     <title>Juárez Mueve - Mapa</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link rel="stylesheet" href="{% static 'transporte/css/mapa.css' %}">
@@ -17,17 +19,14 @@
             w-64 sm:w-56 xs:w-20 transition-all duration-200">
 
         <div>
-            <!-- Logo + Título -->
             <div class="p-4 flex items-center xs:flex-col xs:space-y-1 xs:text-center space-x-3 xs:space-x-0">
                 <div class="w-10 h-10 rounded-full bg-[#3AB54A]"></div>
-
                 <div class="xs:hidden">
                     <h1 class="font-bold text-lg">Juárez Mueve</h1>
                     <p class="text-xs text-gray-500">Smart City Desktop</p>
                 </div>
             </div>
 
-            <!-- Navegación -->
             <nav class="mt-4 space-y-1">
                 <a href="#" class="flex items-center px-4 py-2 bg-[#3AB54A] text-white font-medium">
                     <span class="xs:hidden">Mapa Principal</span>
@@ -51,7 +50,6 @@
             </nav>
         </div>
 
-        <!-- Perfil dinámico -->
         <div class="p-4 border-t">
             <div class="flex items-center space-x-3 xs:flex-col xs:space-x-0 xs:space-y-1 text-center">
                 <div class="w-10 h-10 rounded-full bg-gray-300"></div>
@@ -64,17 +62,18 @@
                 </div>
             </div>
 
-            <a href="{% url 'account_logout' %}"
-               class="text-sm text-red-500 mt-2 inline-block xs:hidden">
-               Cerrar sesión
+            <!-- BOTÓN PARA ABRIR MODAL -->
+            <a @click="openLogout = true"
+               class="text-sm text-red-500 mt-2 inline-block cursor-pointer">
+                Cerrar sesión
             </a>
+
         </div>
     </aside>
 
     <!-- CONTENIDO -->
     <main class="flex-1 p-6 space-y-4 overflow-hidden">
 
-        <!-- Header -->
         <header class="bg-white rounded-lg p-4 shadow-sm flex justify-between items-center">
             <div>
                 <h2 class="text-2xl font-semibold">Mapa de Ciudad Juárez</h2>
@@ -87,7 +86,6 @@
             </div>
         </header>
 
-        <!-- Buscador + Filtros -->
         <div class="bg-white p-4 rounded-lg shadow-sm flex items-center space-x-2">
             <input
                 id="input-buscar"
@@ -100,15 +98,9 @@
             <button id="btn-basura" class="px-4 py-2 bg-yellow-500 text-white rounded-lg">Basura</button>
         </div>
 
-        <!-- MAP + INFO PANEL -->
         <div class="flex gap-4 h-[calc(100vh-200px)]">
+            <div class="flex-1 rounded-lg overflow-hidden shadow-lg bg-gray-300" id="map"></div>
 
-            <!-- Mapa -->
-            <div class="flex-1 rounded-lg overflow-hidden shadow-lg bg-gray-300" id="map">
-                <!-- Aquí pondremos Leaflet -->
-            </div>
-
-            <!-- Panel lateral derecho -->
             <div id="panel-detalles" class="w-72 bg-white rounded-lg shadow p-4">
                 <h3 class="font-semibold text-lg mb-3">Información</h3>
                 <p class="text-sm text-gray-500 mb-6">
@@ -128,9 +120,32 @@
                     </div>
                 </div>
             </div>
-
         </div>
     </main>
+
+    <!-- MODAL LOGOUT -->
+    <div 
+        x-show="openLogout"
+        x-transition
+        class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-[9999]"
+    >
+        <div class="bg-white rounded-lg shadow-lg p-6 w-80 z-[10000]">
+            <h2 class="text-lg font-semibold text-gray-800">¿Cerrar sesión?</h2>
+            <p class="text-sm text-gray-500 mt-2">¿Estás seguro de que deseas salir de tu cuenta?</p>
+
+            <div class="mt-4 flex justify-end space-x-2">
+                <button @click="openLogout = false"
+                        class="px-4 py-2 bg-gray-200 rounded-md">
+                    Cancelar
+                </button>
+
+                <a href="{% url 'account_logout' %}"
+                   class="px-4 py-2 bg-red-500 text-white rounded-md">
+                    Salir
+                </a>
+            </div>
+        </div>
+    </div>
 
     <script src="{% static 'transporte/js/mapa.js' %}"></script>
 </body>
