@@ -1,9 +1,10 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
-from django.contrib.auth.models import User
+# 🚨 Eliminar las importaciones manuales: from django.contrib.auth import authenticate, login
+# 🚨 Eliminar las importaciones manuales: from django.contrib.auth.models import User
 from django.contrib import messages
 from .models import Profile
 from django.db.models import Q
+from django.contrib.auth.models import User # Mantener User para signup
 
 def index(request):
     beneficios = [
@@ -14,39 +15,22 @@ def index(request):
         "Datos en Tiempo Real",
         "Panel Administrativo"
     ]
-
     return render(request, 'juarez_mueve/index.html', {
         'beneficios': beneficios
     })
 
 def login_view(request):
-    if request.method == "POST":
-        user_input = request.POST.get("email")  
-        password = request.POST.get("password")
-
-        # Primero intentamos buscar por username o email
-        try:
-            user = User.objects.get(Q(username=user_input) | Q(email=user_input))
-            username = user.username
-        except User.DoesNotExist:
-            messages.error(request, "Usuario o contraseña incorrectos")
-            return render(request, "login.html")
-
-        # Autenticamos usando el username real
-        user = authenticate(request, username=username, password=password)
-
-        if user is not None:
-            login(request, user)
-            return redirect("/")  # Cambia por la ruta que va después del login
-        else:
-            messages.error(request, "Usuario o contraseña incorrectos")
-
+    # 🚨 CÓDIGO ELIMINADO: Eliminamos todo el bloque 'if request.method == "POST":'
+    # Esta lógica es redundante y conflictiva, ya que allauth debe manejar el POST.
+    
+    # 🚨 IMPORTANTE: Asegúrate de que esta plantilla sea la que allauth usa
+    # para sus errores (colocando una copia en /templates/account/login.html)
     return render(request, "juarez_mueve/login.html")
 
 
 def signup(request):
+    # ... (El código de signup queda sin cambios, ya que está bien)
     if request.method == "POST":
-
         # Datos
         fields = ["first_name", "last_name", "email", "username",
                   "phone", "neighborhood", "password1", "password2"]

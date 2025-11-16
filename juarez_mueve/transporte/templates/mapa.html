@@ -139,11 +139,15 @@
                     Cancelar
                 </button>
 
-                <a href="{% url 'account_logout' %}"
-                   class="px-4 py-2 bg-red-500 text-white rounded-md">
-                    Salir
-                </a>
-            </div>
+                <form method="POST" action="{% url 'account_logout' %}">
+                    {% csrf_token %} 
+                    
+                    <button type="submit"
+                            class="px-4 py-2 bg-red-500 text-white rounded-md">
+                        Salir
+                    </button>
+                </form>
+                </div>
         </div>
     </div>
 

@@ -147,5 +147,6 @@ AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
-LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/' 
+ACCOUNT_LOGIN_URL = '/login/'        # Le dice a allauth que la URL del login es /login/
+LOGIN_REDIRECT_URL = '/transporte/'  # Adónde ir si tiene éxito
+LOGOUT_REDIRECT_URL = '/login/'
