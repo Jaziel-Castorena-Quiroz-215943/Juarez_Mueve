@@ -21,11 +21,14 @@
     <h2 class="text-2xl font-bold text-center mb-1">Welcome to Juárez Mueve</h2>
     <p class="text-center text-gray-600 mb-6">Sign in to continue</p>
 
-    <a href="{% provider_login_url 'google' %}"
-       class="w-full flex items-center justify-center gap-2 border py-3 rounded-lg hover:bg-gray-50 transition">
-        <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5">
-        Continue with Google
-    </a>
+    <button id="google-btn"
+        data-url="{% provider_login_url 'google' %}"
+        class="w-full flex items-center justify-center gap-2 border py-3 rounded-lg hover:bg-gray-50 transition">
+    <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5">
+    Continuar con Google
+</button>
+
+
 
     <div class="flex items-center my-6">
         <hr class="flex-grow border-gray-300">
@@ -63,6 +66,6 @@
     </div>
 
 </div>
-
+<script src="{% static 'js/google.js' %}"></script>
 </body>
 </html>
