@@ -24,5 +24,6 @@ urlpatterns = [
     path('login/',login_view, name='login'),
     path('signup/', signup, name='signup'),
     path('transporte/', include('transporte.urls')),
+    path('accounts/', include('allauth.urls')),
 ]
 
