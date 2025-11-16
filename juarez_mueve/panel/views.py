@@ -4,6 +4,63 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from juarez_mueve.models import Empresa, Profile
 from transporte.models import Ruta, Unidad
 from .forms import ConductorForm, RutaForm, CamionForm
+from django.shortcuts import render
+from django.db.models import Count, Q
+from transporte.models import Unidad, Ruta
+
+def estadisticas(request):
+
+    empresa_actual = getattr(request.user.profile, "empresa", None)
+
+    filtro = {}
+    if empresa_actual:
+        filtro["empresa"] = empresa_actual
+
+    unidades = Unidad.objects.filter(**filtro)
+
+    # Conteos simples
+    unidades_totales = unidades.count()
+    unidades_activas = unidades.filter(activo=True).count()
+    total_rutas = Ruta.objects.filter(**filtro).count()
+
+    # Personal (conductores y recolectores)
+    total_personal = Profile.objects.filter(
+        rol__in=["CONDUCTOR", "RECOLECTOR"], empresa=empresa_actual
+    ).count()
+
+    transporte_activo = unidades.filter(tipo="transporte", activo=True).count()
+    basura_activa = unidades.filter(tipo="basura", activo=True).count()
+
+    # Unidades por ruta
+    unidades_por_ruta = (
+        unidades.values("ruta__nombre")
+        .annotate(total=Count("id"))
+        .order_by("-total")
+    )
+
+    # Activos vs Inactivos
+    activos_inactivos = {
+        "activos": unidades.filter(activo=True).count(),
+        "inactivos": unidades.filter(activo=False).count(),
+    }
+
+    # Distancia (estimada, por ahora)
+    distancia_recorrida = unidades_activas * 12.4
+
+    contexto = {
+        "empresa_actual": empresa_actual,
+        "unidades_totales": unidades_totales,
+        "unidades_activas": unidades_activas,
+        "total_rutas": total_rutas,
+        "total_personal": total_personal,
+        "transporte_activo": transporte_activo,
+        "basura_activa": basura_activa,
+        "unidades_por_ruta": list(unidades_por_ruta),
+        "activos_inactivos": activos_inactivos,
+        "distancia_recorrida": distancia_recorrida,
+    }
+
+    return render(request, "panel/estadisticas.html", contexto)
 
 # Decorador para permitir solo usuarios administrativos
 def admin_required(user):

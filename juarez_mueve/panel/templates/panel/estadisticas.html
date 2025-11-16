@@ -1,0 +1,159 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <title>Estadísticas | Juárez Mueve</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body class="bg-[#F2E8D5] h-screen flex">
+
+    <!-- SIDEBAR -->
+    <aside class="bg-white border-r shadow-sm flex flex-col justify-between w-64 sm:w-56 xs:w-20 transition-all duration-200">
+        <div>
+            <div class="p-4 flex items-center xs:flex-col xs:space-y-1 xs:text-center space-x-3 xs:space-x-0">
+                <div class="w-10 h-10 rounded-full bg-[#3AB54A]"></div>
+                <div class="xs:hidden">
+                    <h1 class="font-bold text-lg">Juárez Mueve</h1>
+                    <p class="text-xs text-gray-500">Panel Administrativo</p>
+                </div>
+            </div>
+
+            <nav class="mt-4 space-y-1 text-sm">
+                <a href="{% url 'mapa' %}" class="flex items-center px-4 py-2 hover:bg-gray-100">Mapa Principal</a>
+                <a href="{% url 'dashboard' %}" class="flex items-center px-4 py-2 hover:bg-gray-100">Panel Administrativo</a>
+                <a href="{% url 'gestionar_rutas' %}" class="flex items-center px-4 py-2 hover:bg-gray-100">Gestión de Rutas</a>
+
+                <a href="{% url 'estadisticas' %}" class="flex items-center px-4 py-2 bg-[#3AB54A] text-white font-medium">
+                    Estadísticas
+                </a>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- CONTENIDO -->
+    <main class="flex-1 p-8 overflow-auto">
+
+        <header class="mb-6">
+            <h2 class="text-3xl font-semibold">Estadísticas del Servicio</h2>
+            <p class="text-sm text-gray-600">
+                {% if empresa_actual %}
+                    Empresa: <strong>{{ empresa_actual.nombre }}</strong>
+                {% else %}
+                    Vista general del sistema.
+                {% endif %}
+            </p>
+        </header>
+
+        <!-- CARDS -->
+        <section class="grid md:grid-cols-3 gap-4 mb-6">
+            <div class="p-4 bg-white rounded-lg shadow">
+                <p class="text-xs text-gray-500">Unidades Totales</p>
+                <p class="text-4xl font-bold">{{ unidades_totales }}</p>
+            </div>
+
+            <div class="p-4 bg-white rounded-lg shadow">
+                <p class="text-xs text-gray-500">Unidades Activas</p>
+                <p class="text-4xl text-green-600 font-bold">{{ unidades_activas }}</p>
+            </div>
+
+            <div class="p-4 bg-white rounded-lg shadow">
+                <p class="text-xs text-gray-500">Personal Operativo</p>
+                <p class="text-4xl font-bold">{{ total_personal }}</p>
+            </div>
+        </section>
+
+        <!-- CARDS -->
+        <section class="grid md:grid-cols-3 gap-4 mb-6">
+            <div class="p-4 bg-white rounded-lg shadow">
+                <p class="text-xs text-gray-500">Transporte Activo</p>
+                <p class="text-4xl text-[#3AB54A] font-bold">{{ transporte_activo }}</p>
+            </div>
+
+            <div class="p-4 bg-white rounded-lg shadow">
+                <p class="text-xs text-gray-500">Recolección Activa</p>
+                <p class="text-4xl text-yellow-500 font-bold">{{ basura_activa }}</p>
+            </div>
+
+            <div class="p-4 bg-white rounded-lg shadow">
+                <p class="text-xs text-gray-500">Distancia Estimada</p>
+                <p class="text-4xl font-bold text-blue-600">{{ distancia_recorrida }} km</p>
+            </div>
+        </section>
+
+        <!-- GRAFICAS -->
+        <section class="grid md:grid-cols-2 gap-6">
+
+            <!-- GRAFICA 1 -->
+            <div class="bg-white rounded-lg shadow p-4">
+                <h3 class="text-lg font-semibold mb-3">Transporte vs Basura</h3>
+                <canvas id="chartTipo"></canvas>
+            </div>
+
+            <!-- GRAFICA 2 -->
+            <div class="bg-white rounded-lg shadow p-4">
+                <h3 class="text-lg font-semibold mb-3">Unidades por Ruta</h3>
+                <canvas id="chartRutas"></canvas>
+            </div>
+        </section>
+
+        <!-- GRAFICA 3 -->
+        <section class="mt-6 bg-white rounded-lg shadow p-4">
+            <h3 class="text-lg font-semibold mb-3">Activos vs Inactivos</h3>
+            <canvas id="chartActivos"></canvas>
+        </section>
+
+    </main>
+
+    <!-- CHARTS SCRIPT -->
+    <script>
+        // TRANSPORTE VS BASURA
+        new Chart(document.getElementById("chartTipo"), {
+            type: "doughnut",
+            data: {
+                labels: ["Transporte activo", "Basura activa"],
+                datasets: [{
+                    data: [{{ transporte_activo }}, {{ basura_activa }}],
+                    backgroundColor: ["#3AB54A", "#FACC15"]
+                }]
+            }
+        });
+
+        // BARRAS POR RUTA
+        new Chart(document.getElementById("chartRutas"), {
+            type: "bar",
+            data: {
+                labels: [
+                    {% for r in unidades_por_ruta %}
+                        "{{ r.ruta__nombre }}",
+                    {% endfor %}
+                ],
+                datasets: [{
+                    label: "Unidades",
+                    data: [
+                        {% for r in unidades_por_ruta %}
+                            {{ r.total }},
+                        {% endfor %}
+                    ],
+                    backgroundColor: "#2563EB"
+                }]
+            }
+        });
+
+        // ACTIVOS VS INACTIVOS
+        new Chart(document.getElementById("chartActivos"), {
+            type: "bar",
+            data: {
+                labels: ["Activos", "Inactivos"],
+                datasets: [{
+                    data: [{{ activos_inactivos.activos }}, {{ activos_inactivos.inactivos }}],
+                    backgroundColor: ["#3AB54A", "#EF4444"]
+                }]
+            }
+        });
+    </script>
+
+</body>
+</html>
