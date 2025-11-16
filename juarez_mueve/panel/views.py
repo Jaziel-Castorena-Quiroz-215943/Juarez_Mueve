@@ -1,31 +1,74 @@
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseForbidden
-from juarez_mueve.decorators import rol_requerido
-from juarez_mueve.models import Profile, Empresa
-from transporte.models import Unidad
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required, user_passes_test
 
+from juarez_mueve.models import Empresa, Unidad, Conductor, Ruta, Camion, Profile
+from .forms import ConductorForm, RutaForm, CamionForm
 
+# Decorador para permitir solo usuarios administrativos
+def admin_required(user):
+    return hasattr(user, 'profile') and user.profile.rol in ['APP_ADMIN','EMPRESA_ADMIN','COORDINADOR_TRANSPORTE','COORDINADOR_BASURA']
 
 @login_required
-@rol_requerido('APP_ADMIN', 'EMPRESA_ADMIN', 'COORDINADOR_TRANSPORTE', 'COORDINADOR_BASURA')
+@user_passes_test(admin_required)
 def dashboard(request):
-    profile = request.user.profile
+    empresa_actual = request.user.profile.empresa if hasattr(request.user, 'profile') else None
 
-    if profile.rol == 'APP_ADMIN':
-        unidades = Unidad.objects.all()
+    # Formularios
+    conductor_form = ConductorForm()
+    ruta_form = RutaForm()
+    camion_form = CamionForm()
+
+    # Manejo de POST
+    if request.method == 'POST':
+        if 'add_conductor' in request.POST:
+            conductor_form = ConductorForm(request.POST)
+            if conductor_form.is_valid():
+                conductor_form.save()
+                messages.success(request, 'Conductor agregado correctamente.')
+                return redirect('dashboard')
+            else:
+                messages.error(request, 'Error al agregar el conductor.')
+
+        elif 'add_ruta' in request.POST:
+            ruta_form = RutaForm(request.POST)
+            if ruta_form.is_valid():
+                ruta_form.save()
+                messages.success(request, 'Ruta agregada correctamente.')
+                return redirect('dashboard')
+            else:
+                messages.error(request, 'Error al agregar la ruta.')
+
+        elif 'add_camion' in request.POST:
+            camion_form = CamionForm(request.POST)
+            if camion_form.is_valid():
+                camion_form.save()
+                messages.success(request, 'Camión agregado correctamente.')
+                return redirect('dashboard')
+            else:
+                messages.error(request, 'Error al agregar el camión.')
+
+    # Datos para mostrar en la tabla
+    if empresa_actual:
+        unidades = Unidad.objects.filter(empresa=empresa_actual)
+        total_unidades = unidades.count()
+        transporte_activo = unidades.filter(tipo='transporte', activo=True).count()
+        basura_activa = unidades.filter(tipo='basura', activo=True).count()
     else:
-        unidades = Unidad.objects.filter(empresa=profile.empresa)
+        unidades = Unidad.objects.all()
+        total_unidades = unidades.count()
+        transporte_activo = unidades.filter(tipo='transporte', activo=True).count()
+        basura_activa = unidades.filter(tipo='basura', activo=True).count()
 
-    total_unidades = unidades.count()
-    transporte_activo = unidades.filter(tipo='transporte').count()
-    basura_activa = unidades.filter(tipo='basura').count()
+    context = {
+        'empresa_actual': empresa_actual,
+        'unidades': unidades,
+        'total_unidades': total_unidades,
+        'transporte_activo': transporte_activo,
+        'basura_activa': basura_activa,
+        'conductor_form': conductor_form,
+        'ruta_form': ruta_form,
+        'camion_form': camion_form,
+    }
 
-    return render(request, "panel/dashboard.html", {
-        "profile": profile,
-        "empresa_actual": profile.empresa,
-        "unidades": unidades,
-        "total_unidades": total_unidades,
-        "transporte_activo": transporte_activo,
-        "basura_activa": basura_activa,
-    })
+    return render(request, 'panel/dashboard.html', context)

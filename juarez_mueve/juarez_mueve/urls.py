@@ -13,6 +13,4 @@ urlpatterns = [
     path('transporte/', include('transporte.urls')),
     path('accounts/', include('allauth.urls')), 
     path('panel/', include('panel.urls')),
-    
-    path('panel/', include('panel.urls')),
 ]

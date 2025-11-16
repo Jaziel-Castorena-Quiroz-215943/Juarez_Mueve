@@ -9,7 +9,7 @@
 
 <body class="bg-[#F2E8D5] h-screen flex">
 
-    <!-- SIDEBAR (mismo que el mapa) -->
+    <!-- SIDEBAR -->
     <aside class="bg-white border-r shadow-sm flex flex-col justify-between
                  w-64 sm:w-56 xs:w-20 transition-all duration-200">
 
@@ -17,7 +17,6 @@
             <!-- Logo + Título -->
             <div class="p-4 flex items-center xs:flex-col xs:space-y-1 xs:text-center space-x-3 xs:space-x-0">
                 <div class="w-10 h-10 rounded-full bg-[#3AB54A]"></div>
-
                 <div class="xs:hidden">
                     <h1 class="font-bold text-lg">Juárez Mueve</h1>
                     <p class="text-xs text-gray-500">Panel Administrativo</p>
@@ -30,10 +29,7 @@
                     <span class="xs:hidden">Mapa Principal</span>
                     <span class="xs:inline hidden">🗺️</span>
                 </a>
-
-                <!-- aquí después podrás meter más secciones si quieres -->
-
-                <a href="{% url 'panel_dashboard' %}" class="flex items-center px-4 py-2 bg-[#3AB54A] text-white font-medium">
+                <a href="{% url 'dashboard' %}" class="flex items-center px-4 py-2 bg-[#3AB54A] text-white font-medium">
                     <span class="xs:hidden">Panel Administrativo</span>
                     <span class="xs:inline hidden">📊</span>
                 </a>
@@ -44,12 +40,11 @@
         <div class="p-4 border-t">
             <div class="flex items-center space-x-3 xs:flex-col xs:space-x-0 xs:space-y-1 text-center">
                 <div class="w-10 h-10 rounded-full bg-gray-300"></div>
-
                 <div class="xs:hidden text-xs">
                     <p class="font-medium text-sm">
                         {{ request.user.get_full_name|default:request.user.username }}
                     </p>
-                    <p class="text-gray-500">Rol: {{ profile.rol }}</p>
+                    <p class="text-gray-500">Rol: {{ request.user.profile.rol }}</p>
                     {% if empresa_actual %}
                         <p class="text-gray-500">Empresa: {{ empresa_actual.nombre }}</p>
                     {% endif %}
@@ -80,11 +75,28 @@
                     </p>
                 {% endif %}
             </div>
-
             <a href="{% url 'account_logout' %}" class="text-sm text-red-500 hover:underline hidden xs:inline-block">
                 Cerrar sesión
             </a>
         </header>
+
+        <!-- Mensajes de éxito/error -->
+        {% if messages %}
+        <div class="space-y-2 mb-4">
+            {% for message in messages %}
+                <div class="p-3 rounded text-white {% if message.tags == 'success' %}bg-green-500{% else %}bg-red-500{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Botones para abrir modales -->
+        <div class="flex gap-4 mb-4">
+            <button onclick="document.getElementById('modal-conductor').classList.remove('hidden')" class="bg-green-500 text-white px-4 py-2 rounded">Agregar Conductor</button>
+            <button onclick="document.getElementById('modal-ruta').classList.remove('hidden')" class="bg-blue-500 text-white px-4 py-2 rounded">Agregar Ruta</button>
+            <button onclick="document.getElementById('modal-camion').classList.remove('hidden')" class="bg-yellow-500 text-white px-4 py-2 rounded">Agregar Camión</button>
+        </div>
 
         <!-- Tarjetas de estadísticas -->
         <section class="grid md:grid-cols-3 gap-4">
@@ -132,21 +144,13 @@
                                 <td class="py-2 pr-4 font-medium">{{ u.identificador }}</td>
                                 <td class="py-2 pr-4">
                                     {% if u.tipo == 'transporte' %}
-                                        <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-700">
-                                            Transporte
-                                        </span>
+                                        <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-700">Transporte</span>
                                     {% else %}
-                                        <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-700">
-                                            Basura
-                                        </span>
+                                        <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-700">Basura</span>
                                     {% endif %}
                                 </td>
-                                <td class="py-2 pr-4">
-                                    {{ u.empresa.nombre|default:"-" }}
-                                </td>
-                                <td class="py-2 pr-4">
-                                    {{ u.ruta.nombre|default:"-" }}
-                                </td>
+                                <td class="py-2 pr-4">{{ u.empresa.nombre|default:"-" }}</td>
+                                <td class="py-2 pr-4">{{ u.ruta.nombre|default:"-" }}</td>
                                 <td class="py-2 pr-4">
                                     {% if u.activo %}
                                         <span class="text-xs text-green-600 font-semibold">Activo</span>
@@ -157,9 +161,7 @@
                             </tr>
                         {% empty %}
                             <tr>
-                                <td class="py-4 text-center text-gray-500" colspan="5">
-                                    No hay unidades registradas para esta empresa.
-                                </td>
+                                <td class="py-4 text-center text-gray-500" colspan="5">No hay unidades registradas para esta empresa.</td>
                             </tr>
                         {% endfor %}
                     </tbody>
@@ -168,5 +170,51 @@
         </section>
 
     </main>
+
+    <!-- MODALES -->
+
+    <!-- Modal Conductor -->
+    <div id="modal-conductor" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+        <div class="bg-white p-6 rounded w-96">
+            <h3 class="text-lg font-semibold mb-4">Agregar Conductor</h3>
+            <form method="POST">{% csrf_token %}
+                {{ conductor_form.as_p }}
+                <button type="submit" name="add_conductor" class="bg-green-500 text-white px-4 py-2 rounded">Guardar</button>
+                <button type="button" onclick="document.getElementById('modal-conductor').classList.add('hidden')" class="bg-gray-300 px-4 py-2 rounded ml-2">Cancelar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Ruta -->
+    <div id="modal-ruta" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+        <div class="bg-white p-6 rounded w-96">
+            <h3 class="text-lg font-semibold mb-4">Agregar Ruta</h3>
+            <form method="POST">{% csrf_token %}
+                {{ ruta_form.as_p }}
+                <button type="submit" name="add_ruta" class="bg-blue-500 text-white px-4 py-2 rounded">Guardar</button>
+                <button type="button" onclick="document.getElementById('modal-ruta').classList.add('hidden')" class="bg-gray-300 px-4 py-2 rounded ml-2">Cancelar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Camión -->
+    <div id="modal-camion" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+        <div class="bg-white p-6 rounded w-96">
+            <h3 class="text-lg font-semibold mb-4">Agregar Camión</h3>
+            <form method="POST">{% csrf_token %}
+                {{ camion_form.as_p }}
+                <button type="submit" name="add_camion" class="bg-yellow-500 text-white px-4 py-2 rounded">Guardar</button>
+                <button type="button" onclick="document.getElementById('modal-camion').classList.add('hidden')" class="bg-gray-300 px-4 py-2 rounded ml-2">Cancelar</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        setTimeout(() => {
+            const alerts = document.querySelectorAll('.p-3');
+            alerts.forEach(a => a.remove());
+        }, 5000);
+    </script>
+
 </body>
 </html>
