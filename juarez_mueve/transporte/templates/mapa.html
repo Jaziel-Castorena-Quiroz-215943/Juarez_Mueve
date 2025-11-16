@@ -4,11 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <title>Juárez Mueve - Mapa</title>
+
+    <!-- Tailwind + Alpine -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- CSS propio del mapa -->
     <link rel="stylesheet" href="{% static 'transporte/css/mapa.css' %}">
 </head>
 
@@ -67,7 +68,6 @@
                class="text-sm text-red-500 mt-2 inline-block cursor-pointer">
                 Cerrar sesión
             </a>
-
         </div>
     </aside>
 
@@ -86,20 +86,43 @@
             </div>
         </header>
 
+        <!-- ===============================
+             SELECT DE RUTAS
+        ==================================-->
         <div class="bg-white p-4 rounded-lg shadow-sm flex items-center space-x-2">
+
+            <!-- MULTISELECT DE RUTAS -->
+            <select
+                id="select-rutas"
+                class="border rounded-lg px-3 py-2 text-sm min-w-[250px]"
+                multiple
+            ></select>
+
+            <!-- BUSCADOR (futuro) -->
             <input
                 id="input-buscar"
                 type="text"
                 class="flex-1 border rounded-lg px-3 py-2"
-                placeholder="Buscar por unidad, ruta o colonia...">
-            <button id="btn-buscar" class="px-4 py-2 bg-[#3AB54A] text-white rounded-lg">Buscar</button>
+                placeholder="Buscar unidad / colonia...">
+
+            <button id="btn-buscar" class="px-4 py-2 bg-[#3AB54A] text-white rounded-lg">
+                Mostrar rutas
+            </button>
+
+            <!-- FILTROS -->
             <button id="btn-todos" class="px-4 py-2 bg-blue-500 text-white rounded-lg">Todos</button>
             <button id="btn-transporte" class="px-4 py-2 bg-green-500 text-white rounded-lg">Transporte</button>
             <button id="btn-basura" class="px-4 py-2 bg-yellow-500 text-white rounded-lg">Basura</button>
         </div>
 
         <div class="flex gap-4 h-[calc(100vh-200px)]">
-            <div class="flex-1 rounded-lg overflow-hidden shadow-lg bg-gray-300" id="map"></div>
+            <!-- Contenedor que usará Google Maps -->
+            <div
+                class="flex-1 rounded-lg overflow-hidden shadow-lg bg-gray-300"
+                id="map"
+                data-api-unidades-url="{% url 'api_unidades' %}"
+                data-api-rutas-url="{% url 'rutas_mapa' %}"
+            ></div>
 
             <div id="panel-detalles" class="w-72 bg-white rounded-lg shadow p-4">
                 <h3 class="font-semibold text-lg mb-3">Información</h3>
@@ -108,7 +131,6 @@
                 </p>
 
                 <h4 class="font-semibold text-sm mb-2">Estadísticas en vivo</h4>
-
                 <div class="space-y-2 text-sm">
                     <div class="flex justify-between">
                         <span>Transporte activo</span>
@@ -140,17 +162,23 @@
                 </button>
 
                 <form method="POST" action="{% url 'account_logout' %}">
-                    {% csrf_token %} 
-                    
+                    {% csrf_token %}
                     <button type="submit"
                             class="px-4 py-2 bg-red-500 text-white rounded-md">
                         Salir
                     </button>
                 </form>
-                </div>
+            </div>
         </div>
     </div>
 
-    <script src="{% static 'transporte/js/mapa.js' %}"></script>
+    <!-- JS del mapa -->
+    <script src="{% static 'transporte/js/mapa.js' %}" defer></script>
+
+    <!-- Google Maps -->
+    <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key={{ GOOGLE_MAPS_API_KEY }}&callback=initMap">
+    </script>
+
 </body>
 </html>

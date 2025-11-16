@@ -1,0 +1,74 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel del Conductor | Juárez Mueve</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-[#F2E8D5] min-h-screen p-6">
+
+    <header class="bg-white p-4 rounded-lg shadow flex justify-between items-center">
+        <h1 class="text-2xl font-bold">Panel del Conductor</h1>
+
+        <form action="{% url 'account_logout' %}" method="POST">
+            {% csrf_token %}
+            <button class="text-red-600 font-semibold">Cerrar sesión</button>
+        </form>
+    </header>
+
+    <section class="mt-6 bg-white p-6 rounded-lg shadow">
+
+        <h2 class="text-xl font-semibold">Información Asignada</h2>
+
+        <p class="mt-2">
+            <strong>Nombre:</strong> {{ request.user.get_full_name }}
+        </p>
+
+        {% if unidad %}
+            <p><strong>Unidad asignada:</strong> {{ unidad.identificador }} ({{ unidad.tipo }})</p>
+        {% else %}
+            <p class="text-red-600 font-semibold">No tienes una unidad asignada.</p>
+        {% endif %}
+
+        {% if ruta %}
+            <p><strong>Ruta asignada:</strong> {{ ruta.nombre }}</p>
+        {% else %}
+            <p class="text-red-600 font-semibold">No tienes una ruta asignada.</p>
+        {% endif %}
+
+    </section>
+
+    <section class="mt-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
+
+        <!-- Panel izquierdo -->
+        <div class="col-span-1 bg-white p-4 rounded-lg shadow">
+            <h3 class="font-semibold text-lg mb-3">Acciones</h3>
+
+            {% if unidad %}
+                <button id="btn-activar-gps"
+                        class="w-full bg-green-600 text-white py-2 rounded-lg font-semibold">
+                    Activar ubicación en tiempo real
+                </button>
+            {% else %}
+                <p class="text-red-500 text-sm">Asignar unidad primero.</p>
+            {% endif %}
+        </div>
+
+        <!-- Mapa -->
+        <div class="col-span-3 rounded-lg overflow-hidden shadow bg-gray-200 h-[75vh]" id="map"
+             data-ruta-id="{{ ruta.id }}"
+             data-unidad-id="{{ unidad.id }}">
+        </div>
+
+    </section>
+
+    <script src="{% static 'transporte/js/conductor.js' %}"></script>
+
+    <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key={{ GOOGLE_MAPS_API_KEY }}&callback=initMap">
+    </script>
+
+</body>
+</html>

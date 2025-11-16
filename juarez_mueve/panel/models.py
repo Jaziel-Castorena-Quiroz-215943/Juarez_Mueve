@@ -1,5 +1,5 @@
 from django.db import models
-from juarez_mueve.models import Profile, Empresa, Ruta, Conductor, Camion, Unidad
+from juarez_mueve.models import Profile, Empresa
+from transporte.models import Ruta, Unidad
 
-# Aquí puedes crear modelos adicionales específicos del panel si lo necesitas,
-# como logs de acciones administrativas, pero no duplicar Profile o Empresa.
+# Aquí van tus modelos del panel si tienes alguno...

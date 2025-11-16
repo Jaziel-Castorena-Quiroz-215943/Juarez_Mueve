@@ -3,9 +3,20 @@ from django.contrib.auth.models import User
 from juarez_mueve.models import Empresa
 
 
+
 class Ruta(models.Model):
     nombre = models.CharField(max_length=100)
     descripcion = models.TextField(blank=True)
+
+    origen = models.CharField(max_length=255, null=True, blank=True)
+    destino = models.CharField(max_length=255, null=True, blank=True)
+
+    origen_lat = models.FloatField(null=True, blank=True)
+    origen_lng = models.FloatField(null=True, blank=True)
+    destino_lat = models.FloatField(null=True, blank=True)
+    destino_lng = models.FloatField(null=True, blank=True)
+
+    color = models.CharField(max_length=7, default="#2563eb")
 
     def __str__(self):
         return self.nombre
@@ -27,6 +38,25 @@ class PuntoRuta(models.Model):
     def __str__(self):
         return f"{self.ruta.nombre} #{self.orden}"
 
+class Camion(models.Model):
+    TIPO_CHOICES = [
+        ('transporte', 'Transporte público'),
+        ('basura', 'Recolección de basura'),
+    ]
+
+    identificador = models.CharField(max_length=50, unique=True)
+    tipo = models.CharField(max_length=20, choices=TIPO_CHOICES)
+    empresa = models.ForeignKey(
+        Empresa,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    ruta = models.ForeignKey(Ruta, on_delete=models.SET_NULL, null=True, blank=True)
+    activo = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.identificador
 
 
 class Unidad(models.Model):

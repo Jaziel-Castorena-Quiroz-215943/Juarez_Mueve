@@ -1,17 +1,7 @@
 from django.db import models
-from django.contrib.auth.models import User
-from juarez_mueve.models import Empresa
 
 
 class ZonaBasura(models.Model):
-    empresa = models.ForeignKey(
-        Empresa,
-        on_delete=models.CASCADE,
-        related_name='zonas_basura',
-        null=True,
-        blank=True
-    )
-
     nombre = models.CharField(max_length=100)
     codigo = models.CharField(max_length=20, unique=True)
     horario_inicio = models.TimeField()
@@ -29,14 +19,24 @@ class UnidadBasura(models.Model):
     longitud = models.FloatField(null=True, blank=True)
     activo = models.BooleanField(default=True)
 
-    # conductor asignado
-    conductor = models.ForeignKey(
-        User,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='unidades_basura_que_conduce'
-    )
-
     def __str__(self):
         return self.identificador
+
+
+class UnidadRecoleccion(models.Model):
+    ESTADO_CHOICES = [
+        ('ACTIVO', 'Activo'),
+        ('INACTIVO', 'Inactivo'),
+        ('FUERA_SERV', 'Fuera de servicio'),
+    ]
+
+    nombre = models.CharField(max_length=100)
+    codigo_unidad = models.CharField(max_length=20, unique=True)
+    zona = models.CharField(max_length=100, blank=True)
+    latitud = models.FloatField()
+    longitud = models.FloatField()
+    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='ACTIVO')
+    ultima_actualizacion = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.codigo_unidad} - {self.zona or self.nombre}"

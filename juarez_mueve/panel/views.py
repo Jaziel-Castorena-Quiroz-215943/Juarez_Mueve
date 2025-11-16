@@ -1,8 +1,8 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
-
-from juarez_mueve.models import Empresa, Unidad, Conductor, Ruta, Camion, Profile
+from juarez_mueve.models import Empresa, Profile
+from transporte.models import Ruta, Unidad
 from .forms import ConductorForm, RutaForm, CamionForm
 
 # Decorador para permitir solo usuarios administrativos
@@ -24,7 +24,7 @@ def dashboard(request):
         if 'add_conductor' in request.POST:
             conductor_form = ConductorForm(request.POST)
             if conductor_form.is_valid():
-                conductor_form.save()
+                conductor_form.save(request)
                 messages.success(request, 'Conductor agregado correctamente.')
                 return redirect('dashboard')
             else:
@@ -42,11 +42,20 @@ def dashboard(request):
         elif 'add_camion' in request.POST:
             camion_form = CamionForm(request.POST)
             if camion_form.is_valid():
-                camion_form.save()
-                messages.success(request, 'Camión agregado correctamente.')
-                return redirect('dashboard')
-            else:
-                messages.error(request, 'Error al agregar el camión.')
+                camion = camion_form.save()
+
+                # Crear unidad asociada
+                Unidad.objects.create(
+                    identificador = camion.identificador,
+                    tipo = camion.tipo,
+                    empresa = camion.empresa,
+                    ruta = camion.ruta,
+                    conductor = camion_form.cleaned_data.get("conductor"),
+                    activo = camion.activo
+                )
+
+                messages.success(request, "Camión y unidad registrados correctamente.")
+                return redirect("dashboard")
 
     # Datos para mostrar en la tabla
     if empresa_actual:

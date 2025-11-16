@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+
 # ===============================================================
 # EMPRESAS
 # ===============================================================
@@ -51,7 +52,7 @@ class Profile(models.Model):
     )
     colonia = models.CharField(max_length=100, blank=True, null=True)
     rol = models.CharField(max_length=40, choices=ROLES, default='CIUDADANO')
-    empresa = models.ForeignKey(Empresa, null=True, blank=True, on_delete=models.SET_NULL)
+    empresa = models.ForeignKey("Empresa", null=True, blank=True, on_delete=models.SET_NULL)
 
     def __str__(self):
         return f"{self.user.username} ({self.rol})"
@@ -64,59 +65,3 @@ class Profile(models.Model):
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
         Profile.objects.create(user=instance)
-
-
-# ===============================================================
-# RUTAS
-# ===============================================================
-class Ruta(models.Model):
-    nombre = models.CharField(max_length=100)
-    descripcion = models.TextField(blank=True)
-    empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, null=True, blank=True)
-
-    def __str__(self):
-        return self.nombre
-
-
-# ===============================================================
-# CONDUCTORES
-# ===============================================================
-class Conductor(models.Model):
-    nombre = models.CharField(max_length=100)
-    licencia = models.CharField(max_length=50)
-    empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, null=True, blank=True)
-
-    def __str__(self):
-        return self.nombre
-
-
-# ===============================================================
-# CAMIONES
-# ===============================================================
-class Camion(models.Model):
-    TIPO_CHOICES = [('transporte','Transporte'), ('basura','Basura')]
-
-    identificador = models.CharField(max_length=50)
-    tipo = models.CharField(max_length=20, choices=TIPO_CHOICES)
-    empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, null=True, blank=True)
-    ruta = models.ForeignKey(Ruta, on_delete=models.SET_NULL, null=True, blank=True)
-    activo = models.BooleanField(default=True)
-
-    def __str__(self):
-        return self.identificador
-
-
-# ===============================================================
-# UNIDADES
-# ===============================================================
-class Unidad(models.Model):
-    TIPO_CHOICES = [('transporte','Transporte'), ('basura','Basura')]
-
-    identificador = models.CharField(max_length=50)
-    tipo = models.CharField(max_length=20, choices=TIPO_CHOICES)
-    empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, null=True, blank=True)
-    ruta = models.ForeignKey(Ruta, on_delete=models.SET_NULL, null=True, blank=True)
-    activo = models.BooleanField(default=True)
-
-    def __str__(self):
-        return self.identificador

@@ -29,9 +29,16 @@
                     <span class="xs:hidden">Mapa Principal</span>
                     <span class="xs:inline hidden">🗺️</span>
                 </a>
+
                 <a href="{% url 'dashboard' %}" class="flex items-center px-4 py-2 bg-[#3AB54A] text-white font-medium">
                     <span class="xs:hidden">Panel Administrativo</span>
                     <span class="xs:inline hidden">📊</span>
+                </a>
+
+                <!-- Nuevo acceso directo a la gestión de rutas -->
+                <a href="{% url 'gestionar_rutas' %}" class="flex items-center px-4 py-2 hover:bg-gray-100">
+                    <span class="xs:hidden">Gestión de Rutas</span>
+                    <span class="xs:inline hidden">🚌</span>
                 </a>
             </nav>
         </div>
@@ -91,11 +98,21 @@
         </div>
         {% endif %}
 
-        <!-- Botones para abrir modales -->
+        <!-- Botones para abrir modales / ir a vistas -->
         <div class="flex gap-4 mb-4">
-            <button onclick="document.getElementById('modal-conductor').classList.remove('hidden')" class="bg-green-500 text-white px-4 py-2 rounded">Agregar Conductor</button>
-            <button onclick="document.getElementById('modal-ruta').classList.remove('hidden')" class="bg-blue-500 text-white px-4 py-2 rounded">Agregar Ruta</button>
-            <button onclick="document.getElementById('modal-camion').classList.remove('hidden')" class="bg-yellow-500 text-white px-4 py-2 rounded">Agregar Camión</button>
+            <!-- Conductor y Camión siguen como modales -->
+            <button onclick="document.getElementById('modal-conductor').classList.remove('hidden')" class="bg-green-500 text-white px-4 py-2 rounded">
+                Agregar Conductor
+            </button>
+
+            <!-- Ruta ahora redirige a la vista con mapa interactivo -->
+            <a href="{% url 'gestionar_rutas' %}" class="bg-blue-500 text-white px-4 py-2 rounded inline-flex items-center justify-center">
+                Agregar Ruta
+            </a>
+
+            <button onclick="document.getElementById('modal-camion').classList.remove('hidden')" class="bg-yellow-500 text-white px-4 py-2 rounded">
+                Agregar Camión
+            </button>
         </div>
 
         <!-- Tarjetas de estadísticas -->
@@ -161,7 +178,9 @@
                             </tr>
                         {% empty %}
                             <tr>
-                                <td class="py-4 text-center text-gray-500" colspan="5">No hay unidades registradas para esta empresa.</td>
+                                <td class="py-4 text-center text-gray-500" colspan="5">
+                                    No hay unidades registradas para esta empresa.
+                                </td>
                             </tr>
                         {% endfor %}
                     </tbody>
@@ -177,34 +196,102 @@
     <div id="modal-conductor" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
         <div class="bg-white p-6 rounded w-96">
             <h3 class="text-lg font-semibold mb-4">Agregar Conductor</h3>
-            <form method="POST">{% csrf_token %}
-                {{ conductor_form.as_p }}
-                <button type="submit" name="add_conductor" class="bg-green-500 text-white px-4 py-2 rounded">Guardar</button>
-                <button type="button" onclick="document.getElementById('modal-conductor').classList.add('hidden')" class="bg-gray-300 px-4 py-2 rounded ml-2">Cancelar</button>
-            </form>
-        </div>
-    </div>
+        <form method="POST" class="space-y-4">
+            {% csrf_token %}
 
-    <!-- Modal Ruta -->
-    <div id="modal-ruta" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-        <div class="bg-white p-6 rounded w-96">
-            <h3 class="text-lg font-semibold mb-4">Agregar Ruta</h3>
-            <form method="POST">{% csrf_token %}
-                {{ ruta_form.as_p }}
-                <button type="submit" name="add_ruta" class="bg-blue-500 text-white px-4 py-2 rounded">Guardar</button>
-                <button type="button" onclick="document.getElementById('modal-ruta').classList.add('hidden')" class="bg-gray-300 px-4 py-2 rounded ml-2">Cancelar</button>
-            </form>
+            <div>
+                <label class="block text-sm font-medium">Nombre</label>
+                <input type="text" name="nombre" required class="w-full border rounded px-3 py-2">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium">Apellido</label>
+                <input type="text" name="apellido" required class="w-full border rounded px-3 py-2">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium">Correo</label>
+                <input type="email" name="correo" required class="w-full border rounded px-3 py-2">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium">Contraseña</label>
+                <input type="password" name="contraseña" required class="w-full border rounded px-3 py-2">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium">Rol del conductor</label>
+                <select name="rol" required class="w-full border rounded px-3 py-2">
+                    <option value="CONDUCTOR">Conductor</option>
+                    <option value="RECOLECTOR">Recolector</option>
+                </select>
+            </div>
+
+            <div class="flex justify-end space-x-2 pt-4">
+                <button type="submit" name="add_conductor" class="bg-green-500 text-white px-4 py-2 rounded">
+                    Guardar
+                </button>
+
+                <button type="button"
+                        onclick="document.getElementById('modal-conductor').classList.add('hidden')"
+                        class="bg-gray-300 px-4 py-2 rounded">
+                    Cancelar
+                </button>
+            </div>
+        </form>
         </div>
     </div>
 
     <!-- Modal Camión -->
     <div id="modal-camion" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-        <div class="bg-white p-6 rounded w-96">
-            <h3 class="text-lg font-semibold mb-4">Agregar Camión</h3>
-            <form method="POST">{% csrf_token %}
-                {{ camion_form.as_p }}
-                <button type="submit" name="add_camion" class="bg-yellow-500 text-white px-4 py-2 rounded">Guardar</button>
-                <button type="button" onclick="document.getElementById('modal-camion').classList.add('hidden')" class="bg-gray-300 px-4 py-2 rounded ml-2">Cancelar</button>
+        <div class="bg-white p-6 rounded w-full max-w-md">
+            <h3 class="text-lg font-semibold mb-4">Agregar Camión / Unidad</h3>
+
+            <form method="POST" class="space-y-4">
+                {% csrf_token %}
+
+                <div>
+                    <label class="block text-sm font-medium mb-1">Identificador de la unidad</label>
+                    {{ camion_form.identificador }}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-1">Tipo de unidad</label>
+                    {{ camion_form.tipo }}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-1">Empresa</label>
+                    {{ camion_form.empresa }}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-1">Ruta asignada</label>
+                    {{ camion_form.ruta }}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-1">Conductor asignado</label>
+                    {{ camion_form.conductor }}
+                </div>
+
+                <div class="flex items-center space-x-2">
+                    {{ camion_form.activo }}
+                    <span class="text-sm">Unidad activa</span>
+                </div>
+
+                <div class="flex justify-end space-x-2 pt-4">
+                    <button type="submit" name="add_camion"
+                            class="bg-yellow-500 text-white px-4 py-2 rounded">
+                        Guardar
+                    </button>
+
+                    <button type="button"
+                            onclick="document.getElementById('modal-camion').classList.add('hidden')"
+                            class="bg-gray-300 px-4 py-2 rounded">
+                        Cancelar
+                    </button>
+                </div>
             </form>
         </div>
     </div>

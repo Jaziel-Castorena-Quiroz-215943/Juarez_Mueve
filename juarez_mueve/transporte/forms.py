@@ -7,16 +7,30 @@ from juarez_mueve.models import Empresa
 class RutaForm(forms.ModelForm):
     class Meta:
         model = Ruta
-        fields = ["nombre", "descripcion"]
+        fields = ["nombre", "descripcion", "origen", "destino", "color"]
         widgets = {
             "nombre": forms.TextInput(attrs={
-                "class": "w-full border rounded-lg px-3 py-2",
-                "placeholder": "Ruta 1 - ICSA - Centro"
+                "class": "w-full border rounded px-3 py-2",
+                "placeholder": "Ej. Ruta Acacias – UACJ"
             }),
             "descripcion": forms.Textarea(attrs={
-                "class": "w-full border rounded-lg px-3 py-2",
-                "rows": 3,
-                "placeholder": "Descripción opcional de la ruta..."
+                "class": "w-full border rounded px-3 py-2",
+                "rows": 2,
+                "placeholder": "Descripción breve de la ruta"
+            }),
+            "origen": forms.TextInput(attrs={
+                "class": "w-full border rounded px-3 py-2",
+                "placeholder": "Punto de partida (usa el buscador del mapa)",
+                "id": "id_origen"
+            }),
+            "destino": forms.TextInput(attrs={
+                "class": "w-full border rounded px-3 py-2",
+                "placeholder": "Punto de llegada (usa el buscador del mapa)",
+                "id": "id_destino"
+            }),
+            "color": forms.TextInput(attrs={
+                "class": "w-full border rounded px-3 py-2",
+                "type": "color",
             }),
         }
 

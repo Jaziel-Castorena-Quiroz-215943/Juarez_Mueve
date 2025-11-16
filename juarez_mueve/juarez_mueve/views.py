@@ -1,10 +1,17 @@
 from django.shortcuts import render, redirect
-# 🚨 Eliminar las importaciones manuales: from django.contrib.auth import authenticate, login
-# 🚨 Eliminar las importaciones manuales: from django.contrib.auth.models import User
 from django.contrib import messages
-from .models import Profile
-from django.db.models import Q
-from django.contrib.auth.models import User # Mantener User para signup
+from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
+from django.conf import settings
+
+from juarez_mueve.models import Profile, Empresa
+from transporte.models import Unidad, Ruta, UbicacionTiempoReal
+from .forms import CrearConductorForm, CrearCamionForm
+
+
+# ============================================================
+#                        INDEX
+# ============================================================
 
 def index(request):
     beneficios = [
@@ -19,19 +26,21 @@ def index(request):
         'beneficios': beneficios
     })
 
+
+# ============================================================
+#                        LOGIN
+# ============================================================
+
 def login_view(request):
-    # 🚨 CÓDIGO ELIMINADO: Eliminamos todo el bloque 'if request.method == "POST":'
-    # Esta lógica es redundante y conflictiva, ya que allauth debe manejar el POST.
-    
-    # 🚨 IMPORTANTE: Asegúrate de que esta plantilla sea la que allauth usa
-    # para sus errores (colocando una copia en /templates/account/login.html)
     return render(request, "juarez_mueve/login.html")
 
 
+# ============================================================
+#                   REGISTRO CIUDADANO
+# ============================================================
+
 def signup(request):
-    # ... (El código de signup queda sin cambios, ya que está bien)
     if request.method == "POST":
-        # Datos
         fields = ["first_name", "last_name", "email", "username",
                   "phone", "neighborhood", "password1", "password2"]
         data = {f: request.POST.get(f) for f in fields}
@@ -58,14 +67,135 @@ def signup(request):
             last_name=data["last_name"]
         )
 
-        # Crear perfil
+        # Actualizar perfil autogenerado
         profile = Profile.objects.get(user=user)
         profile.telefono = data["phone"]
         profile.colonia = data["neighborhood"]
-        profile.rol = "CIUDADANO"  # 🔒 seguridad
+        profile.rol = "CIUDADANO"
         profile.save()
 
         messages.success(request, "Cuenta creada correctamente. Ahora inicia sesión.")
         return redirect('login')
 
     return render(request, 'juarez_mueve/signup.html')
+
+
+# ============================================================
+#              DASHBOARD (ADMIN / COORDINADOR)
+# ============================================================
+
+def dashboard(request):
+
+    # ============================================================
+    #                    CREAR CONDUCTOR
+    # ============================================================
+    if request.method == "POST" and "add_conductor" in request.POST:
+        form = CrearConductorForm(request.POST)
+
+        if form.is_valid():
+            nombre = form.cleaned_data["nombre"]
+            apellido = form.cleaned_data["apellido"]
+            correo = form.cleaned_data["correo"]
+            contraseña = form.cleaned_data["contraseña"]
+            rol = form.cleaned_data["rol"]
+
+            # Crear usuario
+            user = User.objects.create_user(
+                username=correo,
+                email=correo,
+                password=contraseña,
+                first_name=nombre,
+                last_name=apellido
+            )
+
+            # Crear perfil
+            Profile.objects.create(
+                user=user,
+                rol=rol
+            )
+
+            messages.success(request, "Conductor registrado correctamente.")
+            return redirect("dashboard")
+
+        else:
+            messages.error(request, "Error al agregar el conductor.")
+            print("Errores conductor:", form.errors)
+
+    # ============================================================
+    #                    CREAR CAMIÓN
+    # ============================================================
+    if request.method == "POST" and "add_camion" in request.POST:
+        form = CrearCamionForm(request.POST)
+
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Camión registrado correctamente.")
+            return redirect("dashboard")
+        else:
+            messages.error(request, "Error en el formulario del camión.")
+            print("Errores camión:", form.errors)
+
+    # ============================================================
+    #                    DATOS PARA LA VISTA
+    # ============================================================
+
+    conductor_form = CrearConductorForm()
+    camion_form = CrearCamionForm()
+
+    empresa_actual = None
+    if hasattr(request.user, "profile"):
+
+        if request.user.profile.rol in ["COORDINADOR_TRANSPORTE", "COORDINADOR_BASURA"]:
+            empresa_actual = request.user.profile.empresa
+
+        elif request.user.profile.rol in ["APP_ADMIN", "EMPRESA_ADMIN"]:
+            empresa_actual = None  # Ve todas las unidades
+
+    # ================= Obtener unidades =====================
+    if empresa_actual:
+        unidades = Unidad.objects.filter(empresa=empresa_actual)
+    else:
+        unidades = Unidad.objects.all()
+
+    total_unidades = unidades.count()
+    transporte_activo = unidades.filter(tipo="transporte", activo=True).count()
+    basura_activa = unidades.filter(tipo="basura", activo=True).count()
+
+    context = {
+        "empresa_actual": empresa_actual,
+        "unidades": unidades,
+        "total_unidades": total_unidades,
+        "transporte_activo": transporte_activo,
+        "basura_activa": basura_activa,
+        "conductor_form": conductor_form,
+        "camion_form": camion_form,
+    }
+
+    return render(request, "panel/dashboard.html", context)
+
+
+# ============================================================
+#                    PANEL DEL CONDUCTOR
+# ============================================================
+
+@login_required
+def panel_conductor(request):
+    profile = request.user.profile
+
+    if profile.rol not in ["CONDUCTOR", "RECOLECTOR"]:
+        return redirect("dashboard")
+
+    ruta = getattr(profile, "ruta_asignada", None)
+
+    try:
+        unidad = Unidad.objects.get(conductor=request.user)
+    except Unidad.DoesNotExist:
+        unidad = None
+
+    context = {
+        "ruta": ruta,
+        "unidad": unidad,
+        "GOOGLE_MAPS_API_KEY": settings.GOOGLE_MAPS_API_KEY,
+    }
+
+    return render(request, "conductor/panel.html", context)
