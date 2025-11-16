@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html lang="es">
 {% load static %}
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <title>Juárez Mueve - Mapa</title>
@@ -8,15 +8,13 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link rel="stylesheet" href="{% static 'transporte/css/mapa.css' %}">
-
-
 </head>
 
 <body class="bg-[#F2E8D5] h-screen flex">
 
-        <!-- SIDEBAR -->
-        <aside class="bg-white border-r shadow-sm flex flex-col justify-between
-                w-64 sm:w-56 xs:w-20 transition-all duration-200">
+    <!-- SIDEBAR -->
+    <aside class="bg-white border-r shadow-sm flex flex-col justify-between
+            w-64 sm:w-56 xs:w-20 transition-all duration-200">
 
         <div>
             <!-- Logo + Título -->
@@ -46,27 +44,31 @@
                     <span class="xs:inline hidden">🚛</span>
                 </a>
 
-                <a href="#" class="flex items-center px-4 py-2 hover:bg-gray-100">
+                <a href="{% url 'panel_dashboard' %}" class="flex items-center px-4 py-2 hover:bg-gray-100">
                     <span class="xs:hidden">Panel Administrativo</span>
                     <span class="xs:inline hidden">⚙️</span>
                 </a>
             </nav>
         </div>
 
-        <!-- Perfil -->
+        <!-- Perfil dinámico -->
         <div class="p-4 border-t">
             <div class="flex items-center space-x-3 xs:flex-col xs:space-x-0 xs:space-y-1 text-center">
                 <div class="w-10 h-10 rounded-full bg-gray-300"></div>
 
                 <div class="xs:hidden">
-                    <p class="font-medium">Adrian Vásquez</p>
-                    <p class="text-xs text-gray-500">carlos1vasquez@gmail...</p>
+                    <p class="font-medium">
+                        {{ request.user.get_full_name|default:request.user.username }}
+                    </p>
+                    <p class="text-xs text-gray-500">{{ request.user.email }}</p>
                 </div>
             </div>
 
-            <a href="#" class="text-sm text-gray-600 mt-2 inline-block xs:hidden">Perfil</a>
+            <a href="{% url 'account_logout' %}"
+               class="text-sm text-red-500 mt-2 inline-block xs:hidden">
+               Cerrar sesión
+            </a>
         </div>
-
     </aside>
 
     <!-- CONTENIDO -->
@@ -80,18 +82,22 @@
             </div>
 
             <div class="flex space-x-2">
-                <button class="px-4 py-2 border rounded-lg">📍 Mi Ubicación</button>
-                <button class="px-4 py-2 bg-[#3AB54A] text-white rounded-lg">Actualizar</button>
+                <button id="btn-ubicacion" class="px-4 py-2 border rounded-lg">📍 Mi Ubicación</button>
+                <button id="btn-actualizar" class="px-4 py-2 bg-[#3AB54A] text-white rounded-lg">Actualizar</button>
             </div>
         </header>
 
         <!-- Buscador + Filtros -->
         <div class="bg-white p-4 rounded-lg shadow-sm flex items-center space-x-2">
-            <input type="text" class="flex-1 border rounded-lg px-3 py-2" placeholder="Buscar por unidad, ruta o colonia...">
-            <button class="px-4 py-2 bg-[#3AB54A] text-white rounded-lg">Buscar</button>
-            <button class="px-4 py-2 bg-blue-500 text-white rounded-lg">Todos</button>
-            <button class="px-4 py-2 bg-green-500 text-white rounded-lg">Transporte</button>
-            <button class="px-4 py-2 bg-yellow-500 text-white rounded-lg">Basura</button>
+            <input
+                id="input-buscar"
+                type="text"
+                class="flex-1 border rounded-lg px-3 py-2"
+                placeholder="Buscar por unidad, ruta o colonia...">
+            <button id="btn-buscar" class="px-4 py-2 bg-[#3AB54A] text-white rounded-lg">Buscar</button>
+            <button id="btn-todos" class="px-4 py-2 bg-blue-500 text-white rounded-lg">Todos</button>
+            <button id="btn-transporte" class="px-4 py-2 bg-green-500 text-white rounded-lg">Transporte</button>
+            <button id="btn-basura" class="px-4 py-2 bg-yellow-500 text-white rounded-lg">Basura</button>
         </div>
 
         <!-- MAP + INFO PANEL -->
@@ -105,24 +111,27 @@
             <!-- Panel lateral derecho -->
             <div id="panel-detalles" class="w-72 bg-white rounded-lg shadow p-4">
                 <h3 class="font-semibold text-lg mb-3">Información</h3>
-                <p class="text-sm text-gray-500 mb-6">Selecciona un vehículo en el mapa para ver sus detalles.</p>
+                <p class="text-sm text-gray-500 mb-6">
+                    Selecciona un vehículo en el mapa para ver sus detalles.
+                </p>
 
                 <h4 class="font-semibold text-sm mb-2">Estadísticas en vivo</h4>
 
                 <div class="space-y-2 text-sm">
                     <div class="flex justify-between">
                         <span>Transporte activo</span>
-                        <span class="font-bold text-green-600">6</span>
+                        <span id="stat-transporte" class="font-bold text-green-600">0</span>
                     </div>
                     <div class="flex justify-between">
                         <span>Recolección activa</span>
-                        <span class="font-bold text-yellow-600">5</span>
+                        <span id="stat-basura" class="font-bold text-yellow-600">0</span>
                     </div>
                 </div>
             </div>
 
         </div>
     </main>
-<script src="{% static 'transporte/js/mapa.js' %}"></script>
+
+    <script src="{% static 'transporte/js/mapa.js' %}"></script>
 </body>
 </html>

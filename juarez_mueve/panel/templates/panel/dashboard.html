@@ -1,0 +1,172 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel Administrativo | Juárez Mueve</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-[#F2E8D5] h-screen flex">
+
+    <!-- SIDEBAR (mismo que el mapa) -->
+    <aside class="bg-white border-r shadow-sm flex flex-col justify-between
+                 w-64 sm:w-56 xs:w-20 transition-all duration-200">
+
+        <div>
+            <!-- Logo + Título -->
+            <div class="p-4 flex items-center xs:flex-col xs:space-y-1 xs:text-center space-x-3 xs:space-x-0">
+                <div class="w-10 h-10 rounded-full bg-[#3AB54A]"></div>
+
+                <div class="xs:hidden">
+                    <h1 class="font-bold text-lg">Juárez Mueve</h1>
+                    <p class="text-xs text-gray-500">Panel Administrativo</p>
+                </div>
+            </div>
+
+            <!-- Navegación -->
+            <nav class="mt-4 space-y-1 text-sm">
+                <a href="{% url 'mapa' %}" class="flex items-center px-4 py-2 hover:bg-gray-100">
+                    <span class="xs:hidden">Mapa Principal</span>
+                    <span class="xs:inline hidden">🗺️</span>
+                </a>
+
+                <!-- aquí después podrás meter más secciones si quieres -->
+
+                <a href="{% url 'panel_dashboard' %}" class="flex items-center px-4 py-2 bg-[#3AB54A] text-white font-medium">
+                    <span class="xs:hidden">Panel Administrativo</span>
+                    <span class="xs:inline hidden">📊</span>
+                </a>
+            </nav>
+        </div>
+
+        <!-- Perfil -->
+        <div class="p-4 border-t">
+            <div class="flex items-center space-x-3 xs:flex-col xs:space-x-0 xs:space-y-1 text-center">
+                <div class="w-10 h-10 rounded-full bg-gray-300"></div>
+
+                <div class="xs:hidden text-xs">
+                    <p class="font-medium text-sm">
+                        {{ request.user.get_full_name|default:request.user.username }}
+                    </p>
+                    <p class="text-gray-500">Rol: {{ profile.rol }}</p>
+                    {% if empresa_actual %}
+                        <p class="text-gray-500">Empresa: {{ empresa_actual.nombre }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <a href="{% url 'account_logout' %}" class="text-xs text-red-500 mt-2 inline-block xs:hidden">
+                Cerrar sesión
+            </a>
+        </div>
+
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="flex-1 p-6 space-y-6 overflow-auto">
+
+        <!-- Header -->
+        <header class="bg-white rounded-lg p-4 shadow-sm flex justify-between items-center">
+            <div>
+                <h2 class="text-2xl font-semibold">Panel Administrativo</h2>
+                {% if empresa_actual %}
+                    <p class="text-sm text-gray-500">
+                        Gestión de unidades y rutas de <strong>{{ empresa_actual.nombre }}</strong>
+                    </p>
+                {% else %}
+                    <p class="text-sm text-gray-500">
+                        Vista general de todas las empresas
+                    </p>
+                {% endif %}
+            </div>
+
+            <a href="{% url 'account_logout' %}" class="text-sm text-red-500 hover:underline hidden xs:inline-block">
+                Cerrar sesión
+            </a>
+        </header>
+
+        <!-- Tarjetas de estadísticas -->
+        <section class="grid md:grid-cols-3 gap-4">
+            <div class="bg-white rounded-lg shadow-sm p-4">
+                <p class="text-xs text-gray-500">Unidades registradas</p>
+                <p class="text-3xl font-bold mt-2">{{ total_unidades }}</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm p-4">
+                <p class="text-xs text-gray-500">Transporte activo</p>
+                <p class="text-3xl font-bold mt-2 text-[#3AB54A]">{{ transporte_activo }}</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm p-4">
+                <p class="text-xs text-gray-500">Recolección activa</p>
+                <p class="text-3xl font-bold mt-2 text-yellow-500">{{ basura_activa }}</p>
+            </div>
+        </section>
+
+        <!-- Tabla de unidades -->
+        <section class="bg-white rounded-lg shadow-sm p-4">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-lg font-semibold">Unidades</h3>
+                {% if empresa_actual %}
+                    <span class="text-xs text-gray-500">
+                        Empresa: <strong>{{ empresa_actual.nombre }}</strong>
+                    </span>
+                {% endif %}
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm">
+                    <thead>
+                        <tr class="border-b text-left text-gray-500">
+                            <th class="py-2 pr-4">Identificador</th>
+                            <th class="py-2 pr-4">Tipo</th>
+                            <th class="py-2 pr-4">Empresa</th>
+                            <th class="py-2 pr-4">Ruta</th>
+                            <th class="py-2 pr-4">Activo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in unidades %}
+                            <tr class="border-b last:border-0 hover:bg-gray-50">
+                                <td class="py-2 pr-4 font-medium">{{ u.identificador }}</td>
+                                <td class="py-2 pr-4">
+                                    {% if u.tipo == 'transporte' %}
+                                        <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-700">
+                                            Transporte
+                                        </span>
+                                    {% else %}
+                                        <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-700">
+                                            Basura
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-2 pr-4">
+                                    {{ u.empresa.nombre|default:"-" }}
+                                </td>
+                                <td class="py-2 pr-4">
+                                    {{ u.ruta.nombre|default:"-" }}
+                                </td>
+                                <td class="py-2 pr-4">
+                                    {% if u.activo %}
+                                        <span class="text-xs text-green-600 font-semibold">Activo</span>
+                                    {% else %}
+                                        <span class="text-xs text-gray-400">Inactivo</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td class="py-4 text-center text-gray-500" colspan="5">
+                                    No hay unidades registradas para esta empresa.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+</body>
+</html>

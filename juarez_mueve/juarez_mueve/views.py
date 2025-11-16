@@ -79,8 +79,8 @@ def signup(request):
 
         # Guardar perfil
         profile = Profile.objects.get(user=user)
-        profile.phone = phone
-        profile.neighborhood = neighborhood
+        profile.telefono = phone
+        profile.colonia = neighborhood
         profile.save()
 
         messages.success(request, "Cuenta creada correctamente. Ahora inicia sesión.")

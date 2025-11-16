@@ -6,7 +6,7 @@ router = DefaultRouter()
 router.register(r'unidades', UnidadViewSet, basename='unidades')
 
 urlpatterns = [
-    path('', mapa_principal, name='mapa'),  # ← Página principal
+    path('', mapa_principal, name='mapa'),
+    path('api/unidades_mapa/', unidades_con_ubicacion, name='unidades_mapa'),
     path('api/', include(router.urls)),
-    path('api/unidades/', unidades_con_ubicacion, name='unidades-list'),
 ]

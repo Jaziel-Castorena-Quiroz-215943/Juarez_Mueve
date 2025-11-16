@@ -1,105 +1,189 @@
-// Inicialización Leaflet (ya lo tienes)
-const map = L.map('map').setView([31.6904, -106.4245], 13);
-L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+// static/transporte/js/mapa.js
+
+// 1. Crear mapa centrado en Ciudad Juárez
+const map = L.map('map').setView([31.6911, -106.4245], 12);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
-    attribution: '&copy; OpenStreetMap &copy; CARTO'
+    attribution: '&copy; OpenStreetMap contributors'
 }).addTo(map);
 
-// Contenedor de marcadores por identificador
-const marcadores = {}; // {'Bus 15': L.marker(...) }
-
-// Colores / iconos para tipos
-function styleForTipo(tipo){
-    if(tipo === 'transporte') return { color: '#16a34a', radius: 9 }; // verde
-    if(tipo === 'basura') return { color: '#f59e0b', radius: 9 }; // amarillo
-    return { color: '#6b7280', radius: 8 };
-}
-
-// Crear o actualizar marcador
-function upsertMarker(unidad){
-    if(!unidad.ultima_ubicacion) return;
-    const id = unidad.identificador || unidad.id;
-    const lat = unidad.ultima_ubicacion.latitud;
-    const lng = unidad.ultima_ubicacion.longitud;
-    const tipo = unidad.tipo;
-    const style = styleForTipo(tipo);
-
-    if(marcadores[id]){
-        // mover con animación sencilla (no nativa en circleMarker)
-        marcadores[id].setLatLng([lat, lng]);
-    } else {
-        const marker = L.circleMarker([lat, lng], {
-    radius: style.radius,
-    fillColor: style.color,
-    color: "#333",
-    weight: 1,
-    fillOpacity: 1
-}).addTo(map);
-
-// Guardamos la unidad dentro del marcador
-marker.unidadData = unidad;
-
-// Evento para actualizar panel
-marker.on('click', function() {
-    actualizarPanel(this.unidadData);
+// 2. Iconos para transporte y basura
+const iconTransporte = L.icon({
+    iconUrl: 'https://cdn-icons-png.flaticon.com/512/61/61225.png',
+    iconSize: [26, 26],
+    iconAnchor: [13, 26]
 });
 
-marcadores[id] = marker;
+const iconBasura = L.icon({
+    iconUrl: 'https://cdn-icons-png.flaticon.com/512/3500/3500833.png',
+    iconSize: [26, 26],
+    iconAnchor: [13, 26]
+});
 
-    }
+// 3. Estado de marcadores en memoria
+let unidadesMarkers = []; // { marker, tipo, data }
+
+// 4. Cargar datos desde la API
+function cargarUnidades() {
+    fetch('/transporte/api/unidades/')
+        .then(res => res.json())
+        .then(data => {
+            limpiarMarcadores();
+
+            data.forEach(u => {
+                if (!u.ultima_ubicacion) return; // si no hay posición, no la pintamos
+
+                const lat = u.ultima_ubicacion.latitud;
+                const lng = u.ultima_ubicacion.longitud;
+                const tipo = u.tipo; // 'transporte' o 'basura'
+
+                const icon = tipo === 'basura' ? iconBasura : iconTransporte;
+
+                const marker = L.marker([lat, lng], { icon }).addTo(map);
+
+                marker.on('click', () => mostrarInfoUnidad(u));
+
+                // Guardamos referencia
+                unidadesMarkers.push({ marker, tipo, data: u });
+            });
+
+            actualizarEstadisticas();
+        })
+        .catch(err => {
+            console.error('Error cargando unidades:', err);
+        });
 }
 
-// Fetch a la API y actualizar todos los marcadores
-async function fetchAndUpdate(){
-    try {
-        const res = await fetch('/api/unidades/');
-        if(!res.ok) throw new Error('HTTP ' + res.status);
-        const data = await res.json();
-
-        // marcar existentes como vistos
-        const vistos = new Set();
-
-        data.forEach(u => {
-            upsertMarker(u);
-            const id = u.identificador || u.id;
-            vistos.add(id);
-        });
-
-        // opcional: remover marcadores que ya no vienen en la API
-        Object.keys(marcadores).forEach(id => {
-            if(!vistos.has(id)){
-                map.removeLayer(marcadores[id]);
-                delete marcadores[id];
-            }
-        });
-
-    } catch(err){
-        console.error('Error fetching unidades:', err);
-    }
+// 5. Limpiar marcadores actuales
+function limpiarMarcadores() {
+    unidadesMarkers.forEach(obj => {
+        map.removeLayer(obj.marker);
+    });
+    unidadesMarkers = [];
 }
 
-// Primer fetch y luego poll cada 5s
-fetchAndUpdate();
-setInterval(fetchAndUpdate, 5000);
-
-function actualizarPanel(unidad) {
+// 6. Mostrar información en el panel derecho
+function mostrarInfoUnidad(u) {
     const panel = document.getElementById('panel-detalles');
-    if (!panel) return;
 
-    const ultima = unidad.ultima_ubicacion ? `
-        <p class="text-sm text-gray-500">Última actualización: ${unidad.ultima_ubicacion.timestamp}</p>
-        <p class="mt-1 text-sm"><strong>Lat:</strong> ${unidad.ultima_ubicacion.latitud.toFixed(5)}</p>
-        <p class="text-sm"><strong>Lng:</strong> ${unidad.ultima_ubicacion.longitud.toFixed(5)}</p>
-    ` : `<p class="text-sm text-red-600">Sin ubicación registrada</p>`;
+    const tipoLabel = u.tipo === 'basura'
+        ? 'Recolección de basura'
+        : 'Transporte público';
+
+    const rutaTexto = u.ruta_nombre ? u.ruta_nombre : 'Sin ruta asignada';
+
+    const fecha = u.ultima_ubicacion
+        ? new Date(u.ultima_ubicacion.timestamp).toLocaleString()
+        : 'Sin datos';
 
     panel.innerHTML = `
-        <h3 class="font-semibold text-lg mb-1">${unidad.identificador}</h3>
-        <p class="text-sm text-gray-600 capitalize">Tipo: ${unidad.tipo}</p>
-        ${unidad.ruta ? `<p class="text-sm">Ruta asignada: ${unidad.ruta}</p>` : ''}
-        <hr class="my-2">
-        ${ultima}
-        <button class="mt-4 px-4 py-2 bg-[#3AB54A] text-white rounded-lg w-full">
-            Ver Detalles
-        </button>
+        <h3 class="font-semibold text-lg mb-2">Unidad ${u.identificador}</h3>
+        <p class="text-sm text-gray-600 mb-1"><strong>Tipo:</strong> ${tipoLabel}</p>
+        <p class="text-sm text-gray-600 mb-1"><strong>Ruta:</strong> ${rutaTexto}</p>
+        <p class="text-xs text-gray-500 mt-2">
+            Última actualización: ${fecha}
+        </p>
     `;
 }
+
+// 7. Actualizar estadísticas de la derecha
+function actualizarEstadisticas() {
+    const transporteActivos = unidadesMarkers.filter(m => m.tipo === 'transporte').length;
+    const basuraActiva = unidadesMarkers.filter(m => m.tipo === 'basura').length;
+
+    const spanTransporte = document.getElementById('stat-transporte');
+    const spanBasura = document.getElementById('stat-basura');
+
+    if (spanTransporte) spanTransporte.textContent = transporteActivos;
+    if (spanBasura) spanBasura.textContent = basuraActiva;
+}
+
+// 8. Filtros de botones
+function mostrarTodos() {
+    unidadesMarkers.forEach(obj => {
+        if (!map.hasLayer(obj.marker)) obj.marker.addTo(map);
+    });
+    actualizarEstadisticas();
+}
+
+function filtrarPorTipo(tipoBuscado) {
+    unidadesMarkers.forEach(obj => {
+        if (obj.tipo === tipoBuscado) {
+            if (!map.hasLayer(obj.marker)) obj.marker.addTo(map);
+        } else {
+            if (map.hasLayer(obj.marker)) map.removeLayer(obj.marker);
+        }
+    });
+    actualizarEstadisticas();
+}
+
+// 9. Búsqueda por identificador o ruta
+function buscarUnidad() {
+    const input = document.getElementById('input-buscar');
+    if (!input) return;
+
+    const q = input.value.trim().toLowerCase();
+    if (!q) return;
+
+    let encontrado = null;
+
+    for (const obj of unidadesMarkers) {
+        const id = (obj.data.identificador || '').toLowerCase();
+        const ruta = (obj.data.ruta_nombre || '').toLowerCase();
+        if (id.includes(q) || ruta.includes(q)) {
+            encontrado = obj;
+            break;
+        }
+    }
+
+    if (encontrado) {
+        const latLng = encontrado.marker.getLatLng();
+        map.setView(latLng, 15);
+        mostrarInfoUnidad(encontrado.data);
+    }
+}
+
+// 10. Mi ubicación
+function irAMiUbicacion() {
+    if (!navigator.geolocation) {
+        alert('Tu navegador no soporta geolocalización.');
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        (pos) => {
+            const { latitude, longitude } = pos.coords;
+            map.setView([latitude, longitude], 14);
+            L.circle([latitude, longitude], {
+                radius: 80,
+                color: '#3AB54A',
+                fillColor: '#3AB54A',
+                fillOpacity: 0.3
+            }).addTo(map);
+        },
+        () => {
+            alert('No se pudo obtener tu ubicación.');
+        }
+    );
+}
+
+// 11. Enlazar eventos a los botones
+document.addEventListener('DOMContentLoaded', () => {
+    const btnTodos = document.getElementById('btn-todos');
+    const btnTransporte = document.getElementById('btn-transporte');
+    const btnBasura = document.getElementById('btn-basura');
+    const btnBuscar = document.getElementById('btn-buscar');
+    const btnActualizar = document.getElementById('btn-actualizar');
+    const btnUbicacion = document.getElementById('btn-ubicacion');
+
+    if (btnTodos) btnTodos.addEventListener('click', mostrarTodos);
+    if (btnTransporte) btnTransporte.addEventListener('click', () => filtrarPorTipo('transporte'));
+    if (btnBasura) btnBasura.addEventListener('click', () => filtrarPorTipo('basura'));
+    if (btnBuscar) btnBuscar.addEventListener('click', buscarUnidad);
+    if (btnActualizar) btnActualizar.addEventListener('click', cargarUnidades);
+    if (btnUbicacion) btnUbicacion.addEventListener('click', irAMiUbicacion);
+
+    // Cargar la primera vez
+    cargarUnidades();
+});
