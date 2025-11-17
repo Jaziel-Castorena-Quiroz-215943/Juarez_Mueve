@@ -27,4 +27,7 @@ urlpatterns = [
 
     # Módulo de transporte (mapa, rutas, etc.)
     path("transporte/", include("transporte.urls")),
+
+    path("basura/", include("basura.urls")),
+
 ]

@@ -1,0 +1,197 @@
+{# basura/templates/basura/basura_mapa.html #}
+<!DOCTYPE html>
+{% load static %}
+<html lang="es" x-data="{ openLogout: false }">
+<head>
+    <meta charset="UTF-8">
+    <title>Juárez Mueve - Basura (Mapa)</title>
+
+    <!-- Tailwind + Alpine -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <link rel="stylesheet" href="{% static 'transporte/css/mapa.css' %}">
+    <style>
+      /* Pequeños ajustes específicos para el mapa de basura */
+      #map { height: calc(100vh - 220px); min-height: 500px; }
+      .marker-label { font-weight: 600; font-size: 12px; }
+    </style>
+</head>
+<body class="bg-[#F2E8D5] h-screen flex">
+
+    <!-- SIDEBAR (similar a transporte) -->
+    <aside class="bg-white border-r shadow-sm flex flex-col justify-between w-64 sm:w-56 xs:w-20 transition-all duration-200">
+        <div>
+            <div class="p-4 flex items-center xs:flex-col xs:space-y-1 xs:text-center space-x-3 xs:space-x-0">
+                <div class="w-10 h-10 rounded-full bg-[#F59E0B]"></div>
+                <div class="xs:hidden">
+                    <h1 class="font-bold text-lg">Juárez Mueve</h1>
+                    <p class="text-xs text-gray-500">Recolección de Basura</p>
+                </div>
+            </div>
+
+            <nav class="mt-4 space-y-1">
+                <a href="{% url 'mapa' %}" class="flex items-center px-4 py-2 hover:bg-gray-100">
+                    <span class="xs:hidden">Mapa Principal</span>
+                    <span class="xs:inline hidden">🗺️</span>
+                </a>
+
+                <a href="{% url 'mapa' %}" class="flex items-center px-4 py-2 hover:bg-gray-100">
+                    <span class="xs:hidden">Rutas de Transporte</span>
+                    <span class="xs:inline hidden">🚌</span>
+                </a>
+
+                <a href="{% url 'basura_mapa' %}" class="flex items-center px-4 py-2 bg-[#F59E0B] text-white font-medium">
+                    <span class="xs:hidden">Recolección de Basura</span>
+                    <span class="xs:inline hidden">🚛</span>
+                </a>
+
+                <a href="{% url 'dashboard' %}" class="flex items-center px-4 py-2 hover:bg-gray-100">
+                    <span class="xs:hidden">Panel Administrativo</span>
+                    <span class="xs:inline hidden">⚙️</span>
+                </a>
+            </nav>
+        </div>
+
+        <div class="p-4 border-t">
+            <div class="flex items-center space-x-3 xs:flex-col xs:space-x-0 xs:space-y-1 text-center">
+                <div class="w-10 h-10 rounded-full bg-gray-300"></div>
+                <div class="xs:hidden">
+                    <p class="font-medium">{{ request.user.get_full_name|default:request.user.username }}</p>
+                    <p class="text-xs text-gray-500">{{ request.user.email }}</p>
+                </div>
+            </div>
+
+            <a @click="openLogout = true" class="text-sm text-red-500 mt-2 inline-block cursor-pointer">Cerrar sesión</a>
+        </div>
+    </aside>
+
+    <main class="flex-1 p-6 space-y-4 overflow-hidden">
+        <header class="bg-white rounded-lg p-4 shadow-sm flex justify-between items-center">
+            <div>
+                <h2 class="text-2xl font-semibold">Mapa - Recolección de Basura</h2>
+                <p class="text-sm text-gray-500">Ubicación de unidades y rutas</p>
+            </div>
+
+            <div class="flex space-x-2">
+                <button id="btn-ubicacion" class="px-4 py-2 border rounded-lg">📍 Mi Ubicación</button>
+                <button id="btn-actualizar" class="px-4 py-2 bg-[#F59E0B] text-white rounded-lg">Actualizar</button>
+            </div>
+        </header>
+
+        <div class="bg-white p-4 rounded-lg shadow-sm flex items-center space-x-2">
+            <select id="select-zonas" class="border rounded-lg px-3 py-2 text-sm min-w-[220px]">
+                <option value="">Todas las zonas</option>
+            </select>
+
+            <input id="input-buscar" type="text" class="flex-1 border rounded-lg px-3 py-2" placeholder="Buscar unidad / colonia...">
+            <button id="btn-buscar" class="px-4 py-2 bg-[#F59E0B] text-white rounded-lg">Buscar</button>
+
+            <button id="btn-todos" class="px-4 py-2 bg-blue-500 text-white rounded-lg">Todos</button>
+            <button id="btn-activos" class="px-4 py-2 bg-green-500 text-white rounded-lg">Activos</button>
+        </div>
+
+        <div class="flex gap-4">
+            <div class="flex-1 rounded-lg overflow-hidden shadow-lg bg-gray-300" id="map"
+                 data-api-unidades-url="{% url 'api_unidades_basura' %}">
+            </div>
+
+            <div id="panel-detalles" class="w-80 bg-white rounded-lg shadow p-4">
+                <h3 class="font-semibold text-lg mb-3">Detalles de Unidad</h3>
+                <div id="info-unidad">
+                    <p class="text-sm text-gray-500 mb-2">Selecciona un vehículo en el mapa para ver sus datos.</p>
+                </div>
+
+                <h4 class="font-semibold text-sm mb-2 mt-4">Estadísticas</h4>
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between"><span>Unidades totales</span><span id="stat-total" class="font-bold">0</span></div>
+                    <div class="flex justify-between"><span>Unidades activas</span><span id="stat-activos" class="font-bold">0</span></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Logout modal -->
+    <div x-show="openLogout" x-transition class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-[9999]">
+        <div class="bg-white rounded-lg shadow-lg p-6 w-80 z-[10000]">
+            <h2 class="text-lg font-semibold text-gray-800">¿Cerrar sesión?</h2>
+            <p class="text-sm text-gray-500 mt-2">¿Estás seguro de que deseas salir de tu cuenta?</p>
+            <div class="mt-4 flex justify-end space-x-2">
+                <button @click="openLogout = false" class="px-4 py-2 bg-gray-200 rounded-md">Cancelar</button>
+                <form method="POST" action="{% url 'account_logout' %}">{% csrf_token %}
+                    <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded-md">Salir</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inline JS: petición y mapas -->
+    <script>
+    function initMap() {
+        const map = new google.maps.Map(document.getElementById("map"), {
+            center: { lat: 31.6904, lng: -106.4245 }, // Juárez
+            zoom: 12,
+        });
+
+        // Cargar unidades de basura desde la API
+        fetch("/basura/api/unidades/")
+            .then(response => response.json())
+            .then(data => {
+                console.log("Unidades recibidas:", data.unidades);
+
+                data.unidades.forEach(u => {
+                    if (u.lat && u.lng) {
+                        new google.maps.Marker({
+                            position: { lat: u.lat, lng: u.lng },
+                            map,
+                            title: "Unidad: " + u.identificador + " | Zona: " + u.zona,
+                            icon: {
+                                url: "https://maps.google.com/mapfiles/kml/shapes/truck.png",
+                                scaledSize: new google.maps.Size(48, 48),
+                            }
+                        });
+                    }
+                });
+            })
+            .catch(error => console.error("Error cargando unidades:", error));
+    }
+    fetch("/basura/api/unidades/")
+    .then(res => res.json())
+    .then(data => {
+        data.unidades.forEach(u => {
+
+            // --- Marcar la unidad en el mapa ---
+            let marker = new google.maps.Marker({
+                position: { lat: u.lat, lng: u.lng },
+                map: map,
+                title: u.identificador
+            });
+
+            // --- Dibujar ruta si tiene puntos ---
+            if (u.ruta.length > 0) {
+                let path = u.ruta.map(p => ({
+                    lat: p.lat,
+                    lng: p.lng
+                }));
+
+                let routeLine = new google.maps.Polyline({
+                    path: path,
+                    map: map,
+                    strokeColor: u.color || "#FF0000",
+                    strokeWeight: 4
+                });
+            }
+        });
+    });
+
+</script>
+
+<script async defer src="https://maps.googleapis.com/maps/api/js?key={{ GOOGLE_MAPS_API_KEY }}&callback=initMap"></script>
+
+    <!-- Google Maps -->
+    <script async defer
+      src="https://maps.googleapis.com/maps/api/js?key={{ GOOGLE_MAPS_API_KEY }}&callback=initMap">
+    </script>
+
+</body>
+</html>
