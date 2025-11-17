@@ -14,7 +14,6 @@
                  w-64 sm:w-56 xs:w-20 transition-all duration-200">
 
         <div>
-            <!-- Logo + Título -->
             <div class="p-4 flex items-center xs:flex-col xs:space-y-1 xs:text-center space-x-3 xs:space-x-0">
                 <div class="w-10 h-10 rounded-full bg-[#3AB54A]"></div>
                 <div class="xs:hidden">
@@ -23,7 +22,6 @@
                 </div>
             </div>
 
-            <!-- Navegación -->
             <nav class="mt-4 space-y-1 text-sm">
                 <a href="{% url 'mapa' %}" class="flex items-center px-4 py-2 hover:bg-gray-100">
                     <span class="xs:hidden">Mapa Principal</span>
@@ -35,20 +33,18 @@
                     <span class="xs:inline hidden">📊</span>
                 </a>
 
-                <!-- Nuevo acceso directo a la gestión de rutas -->
                 <a href="{% url 'gestionar_rutas' %}" class="flex items-center px-4 py-2 hover:bg-gray-100">
                     <span class="xs:hidden">Gestión de Rutas</span>
                     <span class="xs:inline hidden">🚌</span>
                 </a>
-                <a href="{% url 'estadisticas' %}"
-                class="flex items-center px-4 py-2 hover:bg-gray-100">
+
+                <a href="{% url 'estadisticas' %}" class="flex items-center px-4 py-2 hover:bg-gray-100">
                     <span class="xs:hidden">Estadísticas</span>
                     <span class="xs:inline hidden">📈</span>
                 </a>
             </nav>
         </div>
 
-        <!-- Perfil -->
         <div class="p-4 border-t">
             <div class="flex items-center space-x-3 xs:flex-col xs:space-x-0 xs:space-y-1 text-center">
                 <div class="w-10 h-10 rounded-full bg-gray-300"></div>
@@ -73,7 +69,7 @@
     <!-- CONTENIDO PRINCIPAL -->
     <main class="flex-1 p-6 space-y-6 overflow-auto">
 
-        <!-- Header -->
+        <!-- HEADER -->
         <header class="bg-white rounded-lg p-4 shadow-sm flex justify-between items-center">
             <div>
                 <h2 class="text-2xl font-semibold">Panel Administrativo</h2>
@@ -82,17 +78,16 @@
                         Gestión de unidades y rutas de <strong>{{ empresa_actual.nombre }}</strong>
                     </p>
                 {% else %}
-                    <p class="text-sm text-gray-500">
-                        Vista general de todas las empresas
-                    </p>
+                    <p class="text-sm text-gray-500">Vista general de todas las empresas</p>
                 {% endif %}
             </div>
+
             <a href="{% url 'account_logout' %}" class="text-sm text-red-500 hover:underline hidden xs:inline-block">
                 Cerrar sesión
             </a>
         </header>
 
-        <!-- Mensajes de éxito/error -->
+        <!-- ALERTAS -->
         {% if messages %}
         <div class="space-y-2 mb-4">
             {% for message in messages %}
@@ -103,14 +98,12 @@
         </div>
         {% endif %}
 
-        <!-- Botones para abrir modales / ir a vistas -->
+        <!-- BOTONES -->
         <div class="flex gap-4 mb-4">
-            <!-- Conductor y Camión siguen como modales -->
             <button onclick="document.getElementById('modal-conductor').classList.remove('hidden')" class="bg-green-500 text-white px-4 py-2 rounded">
                 Agregar Conductor
             </button>
 
-            <!-- Ruta ahora redirige a la vista con mapa interactivo -->
             <a href="{% url 'gestionar_rutas' %}" class="bg-blue-500 text-white px-4 py-2 rounded inline-flex items-center justify-center">
                 Agregar Ruta
             </a>
@@ -120,25 +113,54 @@
             </button>
         </div>
 
-        <!-- Tarjetas de estadísticas -->
+        <!-- ⭐⭐ NUEVAS TARJETAS PROFESIONALES ⭐⭐ -->
         <section class="grid md:grid-cols-3 gap-4">
-            <div class="bg-white rounded-lg shadow-sm p-4">
-                <p class="text-xs text-gray-500">Unidades registradas</p>
-                <p class="text-3xl font-bold mt-2">{{ total_unidades }}</p>
+
+            <!-- Unidades Totales -->
+            <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100 hover:shadow-md transition">
+                <div class="flex items-center space-x-3">
+                    <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span class="text-blue-600 text-xl font-bold">🚍</span>
+                    </div>
+                    <div>
+                        <p class="text-gray-500 text-xs">Unidades Totales</p>
+                        <p class="text-3xl font-bold">{{ total_unidades }}</p>
+                    </div>
+                </div>
+                <p class="text-xs text-gray-500 mt-2">Todas las unidades registradas en el sistema.</p>
             </div>
 
-            <div class="bg-white rounded-lg shadow-sm p-4">
-                <p class="text-xs text-gray-500">Transporte activo</p>
-                <p class="text-3xl font-bold mt-2 text-[#3AB54A]">{{ transporte_activo }}</p>
+            <!-- Transporte Activo -->
+            <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100 hover:shadow-md transition">
+                <div class="flex items-center space-x-3">
+                    <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                        <span class="text-green-600 text-xl font-bold">🚌</span>
+                    </div>
+                    <div>
+                        <p class="text-gray-500 text-xs">Transporte Activo</p>
+                        <p class="text-3xl font-bold text-green-600">{{ transporte_activo }}</p>
+                    </div>
+                </div>
+                <p class="text-xs text-gray-500 mt-2">Camiones de transporte actualmente operando.</p>
             </div>
 
-            <div class="bg-white rounded-lg shadow-sm p-4">
-                <p class="text-xs text-gray-500">Recolección activa</p>
-                <p class="text-3xl font-bold mt-2 text-yellow-500">{{ basura_activa }}</p>
+            <!-- Basura Activa -->
+            <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100 hover:shadow-md transition">
+                <div class="flex items-center space-x-3">
+                    <div class="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center">
+                        <span class="text-yellow-600 text-xl font-bold">🗑️</span>
+                    </div>
+                    <div>
+                        <p class="text-gray-500 text-xs">Recolección Activa</p>
+                        <p class="text-3xl font-bold text-yellow-600">{{ basura_activa }}</p>
+                    </div>
+                </div>
+                <p class="text-xs text-gray-500 mt-2">Unidades de basura actualmente operando.</p>
             </div>
+
         </section>
 
-        <!-- Tabla de unidades -->
+        <!-- TABLA -->
         <section class="bg-white rounded-lg shadow-sm p-4">
             <div class="flex items-center justify-between mb-3">
                 <h3 class="text-lg font-semibold">Unidades</h3>
@@ -300,6 +322,16 @@
             </form>
         </div>
     </div>
+
+
+    <script>
+        setTimeout(() => {
+            document.querySelectorAll('.p-3').forEach(a => a.remove());
+        }, 5000);
+    </script>
+
+</body>
+</html>
 
     <script>
         setTimeout(() => {

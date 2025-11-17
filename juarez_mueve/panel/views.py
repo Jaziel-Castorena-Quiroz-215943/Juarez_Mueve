@@ -7,6 +7,8 @@ from .forms import ConductorForm, RutaForm, CamionForm
 from django.shortcuts import render
 from django.db.models import Count, Q
 from transporte.models import Unidad, Ruta
+from django.http import JsonResponse
+
 
 def estadisticas(request):
 
@@ -138,3 +140,27 @@ def dashboard(request):
     }
 
     return render(request, 'panel/dashboard.html', context)
+
+def rutas_panel(request):
+    empresa_actual = getattr(request.user.profile, "empresa", None)
+
+    rutas = Ruta.objects.all()
+    if empresa_actual:
+        rutas = rutas.filter(empresa=empresa_actual)
+
+    return render(request, "dashboard/rutas_panel.html", {
+        "rutas": rutas,
+        "empresa_actual": empresa_actual,
+    })
+
+def api_ruta_detalle(request, id):
+    r = Ruta.objects.get(id=id)
+    return JsonResponse({
+        "id": r.id,
+        "nombre": r.nombre,
+        "numero": r.numero,
+        "hora_inicio": str(r.hora_inicio),
+        "hora_fin": str(r.hora_fin),
+        "colonias": list(r.colonias.values_list("nombre", flat=True)),
+        "unidades": list(r.unidades.values_list("identificador", flat=True)),
+    })

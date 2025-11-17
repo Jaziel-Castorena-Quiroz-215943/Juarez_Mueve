@@ -1,0 +1,129 @@
+    {% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Rutas | Panel Administrativo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-[#F2E8D5] h-screen flex">
+
+<!-- =============== SIDEBAR (igual al tuyo, no lo cambio) =============== -->
+{% include "partials/sidebar.html" %}
+
+<!-- ===================== CONTENIDO PRINCIPAL ===================== -->
+<main class="flex-1 p-6 overflow-auto">
+
+    <!-- Header -->
+    <header class="bg-white rounded-lg p-4 shadow-sm mb-6">
+        <h2 class="text-2xl font-semibold">Rutas de Transporte</h2>
+        <p class="text-sm text-gray-500">
+            Consulta horarios, colonias y unidades asignadas
+        </p>
+    </header>
+
+    <!-- Buscador -->
+    <div class="bg-white p-4 rounded-lg shadow-sm mb-6 flex items-center space-x-2">
+        <input type="text" id="buscador" placeholder="Buscar ruta..."
+               class="flex-1 border rounded px-3 py-2 text-sm">
+        <button class="bg-[#3AB54A] text-white px-4 py-2 rounded">
+            Buscar
+        </button>
+    </div>
+
+    <!-- Tarjetas de Rutas -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        {% for r in rutas %}
+        <div class="bg-white rounded-lg shadow-sm p-4 border hover:shadow-md transition">
+
+            <!-- Encabezado -->
+            <div class="flex items-center space-x-2 mb-3">
+                <div class="w-8 h-8 flex items-center justify-center rounded-full 
+                            text-white font-semibold"
+                     style="background-color: {{ r.color|default:'#2563EB' }}">
+                    {{ r.numero|default:'?' }}
+                </div>
+
+                <div>
+                    <p class="font-semibold text-gray-800">{{ r.nombre }}</p>
+                    <p class="text-xs text-gray-500">Ruta {{ r.numero }}</p>
+                </div>
+
+                {% if r.activa %}
+                    <span class="ml-auto text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                        Activa
+                    </span>
+                {% endif %}
+            </div>
+
+            <!-- Horario -->
+            <p class="text-xs text-gray-500 mb-2">
+                ⏰ {{ r.hora_inicio }} - {{ r.hora_fin }}
+            </p>
+
+            <p class="text-xs text-gray-500 mb-4">
+                📍 {{ r.colonias|slice:":2" }} + más
+            </p>
+
+            <!-- Botón abrir modal -->
+            <button 
+                onclick="openModal('{{ r.id }}')"
+                class="w-full border border-[#3AB54A] text-[#3AB54A] rounded py-2 mt-2 text-sm hover:bg-[#3AB54A] hover:text-white transition">
+                Ver detalles
+            </button>
+        </div>
+        {% endfor %}
+
+    </section>
+
+</main>
+
+<!-- =============== MODAL =============== -->
+<div id="modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-md p-6 max-w-lg w-full relative">
+
+        <button onclick="closeModal()"
+                class="absolute top-2 right-2 text-gray-400 hover:text-black">
+            ✕
+        </button>
+
+        <h3 id="modal_nombre" class="text-xl font-bold mb-2"></h3>
+
+        <p id="modal_horario" class="text-sm text-gray-600"></p>
+        <p id="modal_colonias" class="text-sm text-gray-600 mt-3"></p>
+
+        <hr class="my-4">
+
+        <p id="modal_unidades" class="text-sm text-gray-800"></p>
+
+    </div>
+</div>
+
+<!-- =============== JS PARA MODAL =============== -->
+<script>
+function openModal(id) {
+    fetch(`/api/ruta/${id}/`)
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById("modal_nombre").innerText =
+                data.nombre + " (Ruta " + data.numero + ")";
+            document.getElementById("modal_horario").innerText =
+                "Horario: " + data.hora_inicio + " - " + data.hora_fin;
+            document.getElementById("modal_colonias").innerText =
+                "Colonias: " + data.colonias.join(", ");
+            document.getElementById("modal_unidades").innerText =
+                "Unidades asignadas: " + data.unidades.join(", ");
+
+            document.getElementById("modal").classList.remove("hidden");
+        });
+}
+
+function closeModal() {
+    document.getElementById("modal").classList.add("hidden");
+}
+</script>
+
+</body>
+</html>

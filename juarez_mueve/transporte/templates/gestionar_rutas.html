@@ -3,150 +3,191 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Gestión de Rutas - Juárez Mueve</title>
+    <title>Gestión de Rutas | Juárez Mueve</title>
     <script src="https://cdn.tailwindcss.com"></script>
+
     <style>
         #map-rutas {
             width: 100%;
-            height: 400px;
-            border-radius: 0.75rem;
+            height: 420px;
+            border-radius: 12px;
             overflow: hidden;
         }
     </style>
 </head>
-<body class="bg-[#F2E8D5] min-h-screen">
 
-<div class="max-w-6xl mx-auto py-8 space-y-8">
+<body class="bg-[#F2E8D5] h-screen flex">
 
-    <header class="flex justify-between items-center">
+    <!-- SIDEBAR -->
+    <aside class="bg-white border-r shadow-sm flex flex-col justify-between
+                 w-64 sm:w-56 xs:w-20 transition-all duration-200">
+
         <div>
-            <h1 class="text-2xl font-bold text-gray-800">Gestión de Rutas</h1>
-            <p class="text-sm text-gray-600">
-                Define el trayecto usando el mapa interactivo (origen y destino con Google Maps).
-            </p>
-        </div>
-        <a href="{% url 'mapa' %}" class="text-sm text-blue-600 hover:underline">
-            ← Volver al mapa principal
-        </a>
-    </header>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-        <!-- Formulario -->
-        <div class="bg-white rounded-xl shadow p-6 space-y-4">
-            <h2 class="text-lg font-semibold mb-2">Nueva Ruta</h2>
-
-            <form method="POST" class="space-y-4">
-                {% csrf_token %}
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Nombre de la ruta</label>
-                    {{ form.nombre }}
+            <!-- Logo -->
+            <div class="p-4 flex items-center xs:flex-col xs:space-y-1 xs:text-center space-x-3 xs:space-x-0">
+                <div class="w-10 h-10 rounded-full bg-[#3AB54A]"></div>
+                <div class="xs:hidden">
+                    <h1 class="font-bold text-lg">Juárez Mueve</h1>
+                    <p class="text-xs text-gray-500">Smart City Desktop</p>
                 </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Descripción</label>
-                    {{ form.descripcion }}
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">
-                        Punto de partida (selecciónalo en el mapa / buscador)
-                    </label>
-                    {{ form.origen }}
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">
-                        Punto de llegada (selecciónalo en el mapa / buscador)
-                    </label>
-                    {{ form.destino }}
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Color de la ruta</label>
-                    {{ form.color }}
-                </div>
-
-                <p class="text-xs text-gray-500">
-                    Nota: Usa el mapa de la derecha para buscar el origen y destino.  
-                    El formulario se llenará automáticamente con la dirección oficial de Google.
-                </p>
-
-                <button
-                    type="submit"
-                    class="w-full py-2 px-4 bg-[#3AB54A] text-white rounded-lg font-semibold hover:bg-green-600 transition"
-                >
-                    Guardar ruta
-                </button>
-            </form>
-        </div>
-
-        <!-- Mapa para seleccionar origen/destino -->
-        <div class="space-y-3">
-            <div class="bg-white rounded-xl shadow p-4 space-y-3">
-                <h2 class="text-lg font-semibold">Seleccionar origen y destino</h2>
-
-                <div class="flex gap-2">
-                    <input
-                        id="origen-search"
-                        type="text"
-                        placeholder="Buscar punto de partida..."
-                        class="flex-1 border rounded px-3 py-2 text-sm"
-                    >
-                    <input
-                        id="destino-search"
-                        type="text"
-                        placeholder="Buscar punto de llegada..."
-                        class="flex-1 border rounded px-3 py-2 text-sm"
-                    >
-                </div>
-
-                <p class="text-xs text-gray-500">
-                    1) Escribe en los buscadores o haz clic en el mapa.  
-                    2) Cuando ambos estén seleccionados, se dibuja la ruta automáticamente.  
-                    3) El nombre de los lugares se copia a los campos del formulario.
-                </p>
             </div>
 
-            <div id="map-rutas" data-api-key="{{ GOOGLE_MAPS_API_KEY }}"></div>
+            <!-- Navegación -->
+            <nav class="mt-4 space-y-1 text-sm">
 
-            <div class="bg-white rounded-xl shadow p-3 text-sm text-gray-600">
-                <p><strong>Rutas existentes:</strong></p>
-                <ul class="list-disc list-inside mt-1 space-y-1">
-                    {% for r in rutas %}
-                        <li>{{ r.nombre }} – {{ r.origen|default:"(sin origen)" }} → {{ r.destino|default:"(sin destino)" }}</li>
-                    {% empty %}
-                        <li>No hay rutas registradas aún.</li>
-                    {% endfor %}
-                </ul>
-            </div>
+                <a href="{% url 'mapa' %}" class="flex items-center px-4 py-2 hover:bg-gray-100">
+                    <span class="xs:hidden">Mapa Principal</span>
+                </a>
+
+                <a href="{% url 'dashboard' %}" class="flex items-center px-4 py-2 hover:bg-gray-100">
+                    <span class="xs:hidden">Panel Administrativo</span>
+                </a>
+
+                <a href="{% url 'gestionar_rutas' %}" 
+                   class="flex items-center px-4 py-2 bg-[#3AB54A] text-white font-medium">
+                    <span class="xs:hidden">Gestión de Rutas</span>
+                </a>
+
+                <a href="{% url 'estadisticas' %}" class="flex items-center px-4 py-2 hover:bg-gray-100">
+                    <span class="xs:hidden">Estadísticas</span>
+                </a>
+
+            </nav>
         </div>
-    </div>
-</div>
 
+        <!-- Perfil -->
+        <div class="p-4 border-t">
+            <div class="flex items-center space-x-3 xs:flex-col xs:space-x-0 xs:space-y-1 text-center">
+                <div class="w-10 h-10 rounded-full bg-gray-300"></div>
+                <div class="xs:hidden text-xs">
+                    <p class="font-medium text-sm">{{ request.user.username }}</p>
+                    <p class="text-gray-500">Rol: {{ request.user.profile.rol }}</p>
+                </div>
+            </div>
+            <a href="{% url 'account_logout' %}" class="text-xs text-red-500 mt-2 inline-block xs:hidden">
+                Cerrar sesión
+            </a>
+        </div>
+
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="flex-1 p-6 space-y-6 overflow-auto">
+
+        <!-- HEADER -->
+        <header class="bg-white rounded-lg p-4 shadow-sm flex justify-between items-center">
+            <div>
+                <h2 class="text-2xl font-semibold">Gestión de Rutas</h2>
+                <p class="text-sm text-gray-500">
+                    Crea nuevas rutas usando el mapa interactivo con origen y destino oficiales.
+                </p>
+            </div>
+            <a href="{% url 'mapa' %}" class="text-sm text-blue-600 hover:underline">
+                ← Volver al mapa
+            </a>
+        </header>
+
+        <!-- CONTENIDO INTERNO -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            <!-- FORMULARIO -->
+            <div class="bg-white rounded-xl shadow p-6 space-y-4">
+                
+                <h3 class="text-lg font-semibold border-b pb-2">Nueva Ruta</h3>
+
+                <form method="POST" class="space-y-4">
+                    {% csrf_token %}
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Nombre</label>
+                        {{ form.nombre }}
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Descripción</label>
+                        {{ form.descripcion }}
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Origen</label>
+                        {{ form.origen }}
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Destino</label>
+                        {{ form.destino }}
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Color</label>
+                        {{ form.color }}
+                    </div>
+
+                    <p class="text-xs text-gray-500">
+                        Usa el mapa interactivo para seleccionar origen y destino.
+                    </p>
+
+                    <button type="submit"
+                        class="w-full py-2 px-4 bg-[#3AB54A] text-white rounded-lg font-semibold hover:bg-green-600">
+                        Guardar ruta
+                    </button>
+                </form>
+            </div>
+
+            <!-- MAPA -->
+            <div class="space-y-3">
+
+                <div class="bg-white rounded-xl shadow p-4 space-y-3">
+                    <h3 class="text-lg font-semibold">Seleccionar puntos</h3>
+
+                    <div class="flex gap-2">
+                        <input id="origen-search" type="text" placeholder="Buscar origen..."
+                            class="flex-1 border rounded px-3 py-2 text-sm">
+                        <input id="destino-search" type="text" placeholder="Buscar destino..."
+                            class="flex-1 border rounded px-3 py-2 text-sm">
+                    </div>
+
+                    <p class="text-xs text-gray-500">
+                        1) Busca o da clic en el mapa.  
+                        2) El sistema copiará automáticamente las direcciones al formulario.
+                    </p>
+                </div>
+
+                <div id="map-rutas" data-api-key="{{ GOOGLE_MAPS_API_KEY }}"></div>
+
+                <div class="bg-white rounded-xl shadow p-3">
+                    <p class="font-semibold text-gray-700 text-sm">Rutas existentes:</p>
+
+                    <ul class="list-disc list-inside text-gray-600 text-sm mt-2 space-y-1">
+                        {% for r in rutas %}
+                            <li>{{ r.nombre }} – {{ r.origen }} → {{ r.destino }}</li>
+                        {% empty %}
+                            <li>No hay rutas registradas aún.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+<!-- MAPS SCRIPT -->
 <script>
-    let map;
-    let directionsService;
-    let directionsRenderer;
-    let origenMarker = null;
-    let destinoMarker = null;
-    let origenPlace = null;
-    let destinoPlace = null;
+    let map, directionsService, directionsRenderer;
+    let origenMarker = null, destinoMarker = null;
+    let origenPlace = null, destinoPlace = null;
 
     function initRouteCreator() {
         const mapDiv = document.getElementById("map-rutas");
 
         map = new google.maps.Map(mapDiv, {
-            center: { lat: 31.6904, lng: -106.4245 }, // Ciudad Juárez
+            center: { lat: 31.6904, lng: -106.4245 },
             zoom: 12,
         });
 
         directionsService = new google.maps.DirectionsService();
-        directionsRenderer = new google.maps.DirectionsRenderer({
-            map: map,
-            suppressMarkers: false,
-        });
+        directionsRenderer = new google.maps.DirectionsRenderer({ map });
 
         const origenInput = document.getElementById("origen-search");
         const destinoInput = document.getElementById("destino-search");
@@ -154,108 +195,77 @@
         const formOrigen = document.getElementById("id_origen");
         const formDestino = document.getElementById("id_destino");
 
-        const origenAutocomplete = new google.maps.places.Autocomplete(origenInput, {
-            componentRestrictions: { country: "mx" },
-        });
-        const destinoAutocomplete = new google.maps.places.Autocomplete(destinoInput, {
-            componentRestrictions: { country: "mx" },
-        });
+        const origenAuto = new google.maps.places.Autocomplete(origenInput);
+        const destinoAuto = new google.maps.places.Autocomplete(destinoInput);
 
-        origenAutocomplete.addListener("place_changed", () => {
-            const place = origenAutocomplete.getPlace();
-            if (!place.geometry || !place.geometry.location) return;
+        origenAuto.addListener("place_changed", () => {
+            let place = origenAuto.getPlace();
+            if (!place.geometry) return;
 
             origenPlace = place;
             if (origenMarker) origenMarker.setMap(null);
+
             origenMarker = new google.maps.Marker({
-                map: map,
+                map,
                 position: place.geometry.location,
-                label: "O",
+                label: "O"
             });
 
-            map.panTo(place.geometry.location);
-            map.setZoom(13);
-
-            // Copiar dirección al form real
-            formOrigen.value = place.formatted_address || place.name || origenInput.value;
-
-            intentarDibujarRuta();
+            formOrigen.value = place.formatted_address;
+            tryDrawRoute();
         });
 
-        destinoAutocomplete.addListener("place_changed", () => {
-            const place = destinoAutocomplete.getPlace();
-            if (!place.geometry || !place.geometry.location) return;
+        destinoAuto.addListener("place_changed", () => {
+            let place = destinoAuto.getPlace();
+            if (!place.geometry) return;
 
             destinoPlace = place;
             if (destinoMarker) destinoMarker.setMap(null);
+
             destinoMarker = new google.maps.Marker({
-                map: map,
+                map,
                 position: place.geometry.location,
-                label: "D",
+                label: "D"
             });
 
-            map.panTo(place.geometry.location);
-            map.setZoom(13);
-
-            // Copiar dirección al form real
-            formDestino.value = place.formatted_address || place.name || destinoInput.value;
-
-            intentarDibujarRuta();
+            formDestino.value = place.formatted_address;
+            tryDrawRoute();
         });
 
-        // También permitir clics en el mapa
-        let modoSeleccion = "origen"; // alterna entre origen/destino al hacer clic
         map.addListener("click", (e) => {
-            if (modoSeleccion === "origen") {
+            if (!origenPlace) {
+                origenPlace = { geometry: { location: e.latLng }};
                 if (origenMarker) origenMarker.setMap(null);
-                origenMarker = new google.maps.Marker({
-                    map: map,
-                    position: e.latLng,
-                    label: "O",
-                });
-                origenPlace = { geometry: { location: e.latLng } };
-                formOrigen.value = `Punto seleccionado (${e.latLng.lat().toFixed(5)}, ${e.latLng.lng().toFixed(5)})`;
-                modoSeleccion = "destino";
+                origenMarker = new google.maps.Marker({ map, position: e.latLng, label: "O" });
+                formOrigen.value = "Punto seleccionado";
             } else {
+                destinoPlace = { geometry: { location: e.latLng }};
                 if (destinoMarker) destinoMarker.setMap(null);
-                destinoMarker = new google.maps.Marker({
-                    map: map,
-                    position: e.latLng,
-                    label: "D",
-                });
-                destinoPlace = { geometry: { location: e.latLng } };
-                formDestino.value = `Punto seleccionado (${e.latLng.lat().toFixed(5)}, ${e.latLng.lng().toFixed(5)})`;
-                modoSeleccion = "origen";
+                destinoMarker = new google.maps.Marker({ map, position: e.latLng, label: "D" });
+                formDestino.value = "Punto seleccionado";
             }
-            intentarDibujarRuta();
+            tryDrawRoute();
         });
     }
 
-    function intentarDibujarRuta() {
+    function tryDrawRoute() {
         if (!origenPlace || !destinoPlace) return;
 
-        const origenLoc = origenPlace.geometry.location;
-        const destinoLoc = destinoPlace.geometry.location;
-
-        const request = {
-            origin: origenLoc,
-            destination: destinoLoc,
-            travelMode: google.maps.TravelMode.DRIVING,
-        };
-
-        directionsService.route(request, (result, status) => {
-            if (status === google.maps.DirectionsStatus.OK) {
-                directionsRenderer.setDirections(result);
-            } else {
-                console.error("No se pudo calcular la ruta:", status);
+        directionsService.route({
+            origin: origenPlace.geometry.location,
+            destination: destinoPlace.geometry.location,
+            travelMode: google.maps.TravelMode.DRIVING
+        }, (res, status) => {
+            if (status === "OK") {
+                directionsRenderer.setDirections(res);
             }
         });
     }
 </script>
 
-<script async
-        defer
-        src="https://maps.googleapis.com/maps/api/js?key={{ GOOGLE_MAPS_API_KEY }}&libraries=places&callback=initRouteCreator">
+<script async defer
+    src="https://maps.googleapis.com/maps/api/js?key={{ GOOGLE_MAPS_API_KEY }}&libraries=places&callback=initRouteCreator">
 </script>
+
 </body>
 </html>
