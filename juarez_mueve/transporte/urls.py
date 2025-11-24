@@ -30,6 +30,7 @@ urlpatterns = [
     path('api/rutas/', rutas_mapa, name='rutas_mapa'),
     path("enviar-queja/", enviar_queja, name="enviar_queja"),
     path('api/unidades/', views.api_unidades, name='api_unidades'),
+    path('api/mapa/', views.api_mapa, name='api_mapa'),
 ]
 
 urlpatterns += router.urls

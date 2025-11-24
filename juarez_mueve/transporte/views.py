@@ -249,3 +249,91 @@ def api_unidades_basura(request):
         })
 
     return JsonResponse({"unidades": unidades})
+
+@api_view(["GET"])
+def api_mapa(request):
+    """
+    Endpoint unificado para el mapa principal:
+    - rutas: todas las rutas con sus puntos
+    - transportes: unidades de tipo 'transporte' con su última ubicación
+    - basura: unidades de tipo 'basura' + UnidadRecoleccion (app basura)
+    """
+    # ---------- RUTAS ----------
+    rutas_data = []
+    for ruta in Ruta.objects.all():
+        puntos = [
+            {"lat": p.latitud, "lng": p.longitud}
+            for p in ruta.puntos.all().order_by("orden")
+        ]
+
+        rutas_data.append({
+            "id": ruta.id,
+            "nombre": ruta.nombre,
+            "origen": ruta.origen,
+            "destino": ruta.destino,
+            "origen_lat": ruta.origen_lat,
+            "origen_lng": ruta.origen_lng,
+            "destino_lat": ruta.destino_lat,
+            "destino_lng": ruta.destino_lng,
+            "color": ruta.color or "#2563eb",
+            "puntos": puntos,
+        })
+
+    # ---------- UNIDADES (modelo Unidad) ----------
+    unidades_qs = Unidad.objects.filter(activo=True).select_related("ruta").prefetch_related("ubicaciones")
+
+    transportes = []
+    basura_unidades = []
+
+    for u in unidades_qs:
+        last = u.ubicaciones.order_by("-timestamp").first()
+        lat = last.latitud if last else None
+        lng = last.longitud if last else None
+
+        item = {
+            "id": u.id,
+            "identificador": u.identificador,
+            "tipo": u.tipo,  # 'transporte' o 'basura'
+            "ruta": u.ruta.id if u.ruta else None,
+            "ruta_nombre": u.ruta.nombre if u.ruta else None,
+            "latitud": lat,
+            "longitud": lng,
+            "estado": "ACTIVO" if u.activo else "INACTIVO",
+        }
+
+        if u.tipo == "transporte":
+            transportes.append(item)
+        else:
+            basura_unidades.append(item)
+
+    # ---------- CAMIONES DE BASURA (UnidadRecoleccion) ----------
+    UnidadRecoleccion = apps.get_model("basura", "UnidadRecoleccion")
+
+    basura_recoleccion = []
+    for b in UnidadRecoleccion.objects.filter(estado="ACTIVO"):
+        basura_recoleccion.append({
+            "id": b.id,
+            "identificador": b.codigo_unidad,
+            "tipo": "basura",
+            "ruta": None,
+            "ruta_nombre": None,
+            "latitud": b.latitud,
+            "longitud": b.longitud,
+            "estado": b.estado,
+            "zona": b.zona,
+        })
+
+    # Unimos todo lo de basura
+    basura_total = basura_unidades + basura_recoleccion
+
+    data = {
+        "rutas": rutas_data,
+        "transportes": transportes,
+        "basura": basura_total,
+        "conteos": {
+            "transportes_activos": len(transportes),
+            "basura_activa": len(basura_total),
+        }
+    }
+
+    return JsonResponse(data)
