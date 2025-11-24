@@ -124,68 +124,17 @@
             </div>
         </div>
     </div>
+<script>
+function initMap() {
+    const centro = { lat: 31.6904, lng: -106.4245 };
 
-    <!-- Inline JS: petición y mapas -->
-    <script>
-    function initMap() {
-        const map = new google.maps.Map(document.getElementById("map"), {
-            center: { lat: 31.6904, lng: -106.4245 }, // Juárez
-            zoom: 12,
-        });
-
-        // Cargar unidades de basura desde la API
-        fetch("/basura/api/unidades/")
-            .then(response => response.json())
-            .then(data => {
-                console.log("Unidades recibidas:", data.unidades);
-
-                data.unidades.forEach(u => {
-                    if (u.lat && u.lng) {
-                        new google.maps.Marker({
-                            position: { lat: u.lat, lng: u.lng },
-                            map,
-                            title: "Unidad: " + u.identificador + " | Zona: " + u.zona,
-                            icon: {
-                                url: "https://maps.google.com/mapfiles/kml/shapes/truck.png",
-                                scaledSize: new google.maps.Size(48, 48),
-                            }
-                        });
-                    }
-                });
-            })
-            .catch(error => console.error("Error cargando unidades:", error));
-    }
-    fetch("/basura/api/unidades/")
-    .then(res => res.json())
-    .then(data => {
-        data.unidades.forEach(u => {
-
-            // --- Marcar la unidad en el mapa ---
-            let marker = new google.maps.Marker({
-                position: { lat: u.lat, lng: u.lng },
-                map: map,
-                title: u.identificador
-            });
-
-            // --- Dibujar ruta si tiene puntos ---
-            if (u.ruta.length > 0) {
-                let path = u.ruta.map(p => ({
-                    lat: p.lat,
-                    lng: p.lng
-                }));
-
-                let routeLine = new google.maps.Polyline({
-                    path: path,
-                    map: map,
-                    strokeColor: u.color || "#FF0000",
-                    strokeWeight: 4
-                });
-            }
-        });
+    window.MAP = new google.maps.Map(document.getElementById("map"), {
+        zoom: 12,
+        center: centro
     });
-
+}
 </script>
-<script src="{% static 'js/basura_mapa.js' %}"></script>
+<script src="{% static 'basura/js/basura_mapa.js' %}"></script>
     <!-- Google Maps -->
     <script async defer
       src="https://maps.googleapis.com/maps/api/js?key={{ GOOGLE_MAPS_API_KEY }}&callback=initMap">

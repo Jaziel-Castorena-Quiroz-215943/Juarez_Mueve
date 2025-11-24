@@ -19,3 +19,21 @@ def api_unidades_basura(request):
         "unidades": serializer.data
     })
 
+
+@api_view(['GET'])
+def posiciones_camiones(request):
+    unidades = UnidadRecoleccion.objects.all()
+
+    data = []
+    for u in unidades:
+        data.append({
+            "id": u.id,
+            "codigo": u.codigo_unidad,
+            "zona": u.zona,
+            "estado": u.estado,
+            "lat": u.latitud,
+            "lng": u.longitud,
+        })
+
+    return Response({"unidades": data})
+
