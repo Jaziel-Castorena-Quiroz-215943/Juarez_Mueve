@@ -199,3 +199,25 @@ def panel_conductor(request):
     }
 
     return render(request, "conductor/panel.html", context)
+
+# ============================================================
+#                      PERFIL DEL USUARIO
+# ============================================================
+
+@login_required
+def perfil(request):
+    profile = request.user.profile  # Tu modelo Profile
+
+    if request.method == "POST":
+        # Campos editables
+        profile.telefono = request.POST.get("telefono")
+        profile.colonia = request.POST.get("colonia")
+        profile.direccion = request.POST.get("direccion")
+        profile.save()
+
+        messages.success(request, "Cambios guardados correctamente.")
+        return redirect("perfil")
+
+    return render(request, "juarez_mueve/perfil.html", {
+        "profile": profile
+    })

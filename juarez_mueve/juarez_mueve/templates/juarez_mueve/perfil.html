@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <title>Mi Perfil - Juárez Mueve</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-[#F2E8D5] min-h-screen flex">
+
+<!-- SIDEBAR -->
+<aside class="bg-white border-r shadow-sm flex flex-col justify-between
+               w-64 sm:w-56 xs:w-20 transition-all duration-200">
+
+    <div>
+        <!-- Logo -->
+        <div class="p-4 flex items-center xs:flex-col xs:space-y-1 xs:text-center space-x-3 xs:space-x-0">
+            <div class="w-10 h-10 rounded-full bg-[#3AB54A]"></div>
+            <div class="xs:hidden">
+                <h1 class="font-bold text-lg">Juárez Mueve</h1>
+                <p class="text-xs text-gray-500">Smart City Desktop</p>
+            </div>
+        </div>
+
+        <!-- Navegación -->
+        <nav class="mt-4 space-y-1">
+
+            <a href="#" class="flex items-center px-4 py-2 bg-[#3AB54A] text-white font-medium">
+                <span class="xs:hidden">Mapa Principal</span>
+                <span class="xs:inline hidden">🗺️</span>
+            </a>
+
+            <a href="#" class="flex items-center px-4 py-2 hover:bg-gray-100">
+                <span class="xs:hidden">Rutas de Transporte</span>
+                <span class="xs:inline hidden">🚌</span>
+            </a>
+
+            <a href="{% url 'basura_mapa' %}" class="flex items-center px-4 py-2 hover:bg-gray-100">
+                <span class="xs:hidden">Recolección de Basura</span>
+                <span class="xs:inline hidden">🚛</span>
+            </a>
+
+            <a href="{% url 'dashboard' %}" class="flex items-center px-4 py-2 hover:bg-gray-100">
+                <span class="xs:hidden">Panel Administrativo</span>
+                <span class="xs:inline hidden">⚙️</span>
+            </a>
+
+        </nav>
+    </div>
+
+    <!-- Perfil en Sidebar -->
+    <div class="p-4 border-t">
+        <div class="flex items-center space-x-3 xs:flex-col xs:space-x-0 xs:space-y-1 text-center">
+            <div class="w-10 h-10 rounded-full bg-gray-300"></div>
+
+            <div class="xs:hidden">
+                <a href="{% url 'perfil' %}"
+                   class="font-medium hover:text-green-600 transition">
+                    {{ request.user.get_full_name|default:request.user.username }}
+                </a>
+                <p class="text-xs text-gray-500">{{ request.user.email }}</p>
+            </div>
+        </div>
+    </div>
+
+</aside> <!-- Cierre correcto del sidebar -->
+
+
+<!-- CONTENIDO PRINCIPAL -->
+<main class="flex-1 p-6 space-y-4">
+
+    <h2 class="text-3xl font-semibold mb-4">Mi Perfil</h2>
+    <p class="text-gray-600 -mt-3">Administra tu información personal y preferencias</p>
+
+    <!-- Encabezado del perfil -->
+    <div class="bg-[#E8F5E9] p-5 rounded-xl shadow-sm flex items-center gap-4">
+
+        <div class="w-16 h-16 rounded-full bg-green-600 text-white flex items-center justify-center text-2xl font-bold">
+            {{ request.user.first_name|slice:":1"|upper }}
+        </div>
+
+        <div class="flex-1">
+            <h3 class="text-xl font-semibold">{{ request.user.get_full_name }}</h3>
+            <p class="text-gray-700">{{ request.user.email }}</p>
+
+            <span class="mt-2 inline-block bg-blue-600 text-white px-3 py-1 rounded-full text-xs">
+                Administrador
+            </span>
+        </div>
+    </div>
+
+    <!-- Información personal -->
+    <div class="bg-white p-6 rounded-xl shadow-sm">
+        <h4 class="font-semibold text-lg mb-4">Información Personal</h4>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="grid grid-cols-2 gap-4">
+
+                <!-- Nombre -->
+                <div>
+                    <label class="font-medium">Nombre Completo</label>
+                    <input
+                        type="text"
+                        value="{{ request.user.get_full_name }}"
+                        class="w-full border rounded-lg px-3 py-2 mt-1 bg-gray-100"
+                        readonly
+                    >
+                    <p class="text-xs text-gray-500 mt-1">
+                        Contacta al administrador para cambiar tu nombre
+                    </p>
+                </div>
+
+                <!-- Correo -->
+                <div>
+                    <label class="font-medium">Correo Electrónico</label>
+                    <input
+                        type="email"
+                        value="{{ request.user.email }}"
+                        class="w-full border rounded-lg px-3 py-2 mt-1 bg-gray-100"
+                        readonly
+                    >
+                </div>
+
+                <!-- Teléfono -->
+                <div>
+                    <label class="font-medium">Teléfono</label>
+                    <input
+                        type="text"
+                        name="telefono"
+                        value="{{ perfil.telefono }}"
+                        class="w-full border rounded-lg px-3 py-2 mt-1"
+                    >
+                </div>
+
+                <!-- Colonia -->
+                <div>
+                    <label class="font-medium">Colonia</label>
+                    <input
+                        type="text"
+                        name="colonia"
+                        value="{{ perfil.colonia }}"
+                        class="w-full border rounded-lg px-3 py-2 mt-1"
+                    >
+                </div>
+
+            </div>
+
+            <!-- Dirección -->
+            <div class="mt-4">
+                <label class="font-medium">Dirección Completa</label>
+                <input
+                    type="text"
+                    name="direccion"
+                    value="{{ perfil.direccion }}"
+                    class="w-full border rounded-lg px-3 py-2 mt-1"
+                >
+            </div>
+
+            <button class="mt-5 px-6 py-2 bg-green-600 text-white rounded-lg">
+                Guardar Cambios
+            </button>
+        </form>
+    </div>
+
+</main>
+
+</body>
+</html>

@@ -56,9 +56,10 @@
                 <div class="w-10 h-10 rounded-full bg-gray-300"></div>
 
                 <div class="xs:hidden">
-                    <p class="font-medium">
-                        {{ request.user.get_full_name|default:request.user.username }}
-                    </p>
+                    <a href="{% url 'perfil' %}"
+                        class="font-medium hover:text-green-600 transition">
+                            {{ request.user.get_full_name|default:request.user.username }}
+                    </a>
                     <p class="text-xs text-gray-500">{{ request.user.email }}</p>
                 </div>
             </div>

@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.urls import path, include
+from . import views
 
 from juarez_mueve.views import (
     index,
@@ -29,5 +30,8 @@ urlpatterns = [
     path("transporte/", include("transporte.urls")),
 
     path("basura/", include("basura.urls")),
+
+    path("perfil/", views.perfil, name="perfil"),
+
 
 ]
