@@ -100,3 +100,32 @@ class UbicacionTiempoReal(models.Model):
 
     def __str__(self):
         return f"{self.unidad.identificador} - {self.timestamp}"
+        
+class Queja(models.Model):
+    usuario = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+    unidad = models.ForeignKey(
+        Unidad,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="Unidad relacionada con la queja (si aplica)."
+    )
+
+    ruta = models.ForeignKey(
+        Ruta,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+    mensaje = models.TextField()
+    fecha = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Queja #{self.id} - {self.usuario}"

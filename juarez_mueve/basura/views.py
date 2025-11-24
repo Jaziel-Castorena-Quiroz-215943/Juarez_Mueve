@@ -14,5 +14,8 @@ def mapa_basura(request):
 def api_unidades_basura(request):
     unidades = UnidadRecoleccion.objects.all()
     serializer = UnidadRecoleccionSerializer(unidades, many=True)
-    return Response(serializer.data)
+    
+    return Response({
+        "unidades": serializer.data
+    })
 

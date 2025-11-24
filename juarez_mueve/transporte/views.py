@@ -6,11 +6,12 @@ from django.http import JsonResponse
 from django.apps import apps 
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import redirect
-from .forms import RutaForm
-from .models import Unidad, Ruta
+from .forms import RutaForm, QuejaForm
+from .models import Unidad, Ruta, Queja, UbicacionTiempoReal
 from .serializers import UnidadSerializer
 from .google_directions import obtener_puntos_ruta
 from .models import PuntoRuta
+from django.db.models import OuterRef, Subquery
 
 
 def mapa_principal(request):
@@ -170,3 +171,81 @@ def gestionar_rutas(request):
         "rutas": rutas,
     }
     return render(request, "gestionar_rutas.html", context)
+
+def enviar_queja(request):
+    if request.method == "POST":
+        mensaje = request.POST.get("mensaje", "").strip()
+
+        if not mensaje:
+            return JsonResponse({"ok": False, "error": "Mensaje vacío"})
+
+        queja = Queja.objects.create(
+            usuario=request.user if request.user.is_authenticated else None,
+            mensaje=mensaje
+        )
+
+        return JsonResponse({"ok": True})
+
+    return JsonResponse({"ok": False, "error": "Método inválido"})
+
+def api_unidades(request):
+    """
+    Devuelve JSON con las últimas ubicaciones de unidades.
+    Estructura devuelta:
+    {
+        "transportes": [{id, identificador, latitud, longitud, ruta, nombre, numero_economico, ...}, ...],
+        "basura": [...]
+    }
+    """
+    # Obtener todas las unidades activas
+    unidades = Unidad.objects.filter(activo=True)
+
+    transportes_list = []
+    basura_list = []
+
+    # Alternativa eficiente: iterar y obtener última ubicación por unidad
+    for u in unidades:
+        last = u.ubicaciones.order_by('-timestamp').first()
+        if not last:
+            continue
+
+        item = {
+            "id": u.id,
+            "identificador": u.identificador,
+            "latitud": last.latitud,
+            "longitud": last.longitud,
+            "ruta": u.ruta.id if u.ruta else None,
+            "ruta_nombre": u.ruta.nombre if u.ruta else None,
+            "tipo": u.tipo,
+            "nombre": getattr(u, "nombre", None) or u.identificador,
+            # añade campos adicionales si los tienes en tu modelo/unidad
+        }
+
+        if u.tipo == "transporte":
+            transportes_list.append(item)
+        else:
+            basura_list.append(item)
+
+    return JsonResponse({
+        "transportes": transportes_list,
+        "basura": basura_list
+    })
+
+def api_unidades_basura(request):
+    UnidadRecoleccion = apps.get_model("basura", "UnidadRecoleccion")
+
+    qs = UnidadRecoleccion.objects.filter(estado="ACTIVO")
+
+    unidades = []
+
+    for u in qs:
+        unidades.append({
+            "id": u.id,
+            "identificador": u.codigo_unidad,
+            "zona": u.zona,
+            "lat": u.latitud,
+            "lng": u.longitud,
+            "estado": u.estado,
+        })
+
+    return JsonResponse({"unidades": unidades})

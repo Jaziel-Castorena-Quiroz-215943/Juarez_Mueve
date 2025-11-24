@@ -1,5 +1,6 @@
 from django.urls import path
 from rest_framework.routers import DefaultRouter
+from . import views
 from .views import (
     mapa_principal,
     mapa_ciudad,
@@ -8,6 +9,7 @@ from .views import (
     rutas_mapa,
     gestionar_rutas,
     UnidadViewSet,
+    enviar_queja,
 )
 
 router = DefaultRouter()
@@ -26,6 +28,8 @@ urlpatterns = [
     path('api/unidades/', api_unidades, name='api_unidades'),
     path('api/unidades-con-ubicacion/', unidades_con_ubicacion, name='unidades_con_ubicacion'),
     path('api/rutas/', rutas_mapa, name='rutas_mapa'),
+    path("enviar-queja/", enviar_queja, name="enviar_queja"),
+    path('api/unidades/', views.api_unidades, name='api_unidades'),
 ]
 
 urlpatterns += router.urls

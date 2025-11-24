@@ -1,6 +1,6 @@
 # transporte/forms.py
 from django import forms
-from .models import Unidad, Ruta
+from .models import Unidad, Ruta, Queja
 from juarez_mueve.models import Empresa
 
 
@@ -71,3 +71,14 @@ class UnidadForm(forms.ModelForm):
         else:
             # admin_app ve todas
             self.fields["empresa"].queryset = Empresa.objects.filter(activo=True)
+
+class QuejaForm(forms.ModelForm):
+    class Meta:
+        model = Queja
+        fields = ["mensaje"]
+        widgets = {
+            "mensaje": forms.Textarea(attrs={
+                "class": "w-full border rounded-lg p-3 h-28",
+                "placeholder": "Describe tu queja…"
+            })
+        }

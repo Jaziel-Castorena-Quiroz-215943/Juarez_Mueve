@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 {% load static %}
-<html lang="es" x-data="{ openLogout: false }">
+<html lang="es" x-data="{ openLogout: false, openQueja: false, openGracias: false }">
 <head>
     <meta charset="UTF-8">
     <title>Juárez Mueve - Mapa</title>
@@ -48,6 +48,13 @@
                     <span class="xs:hidden">Panel Administrativo</span>
                     <span class="xs:inline hidden">⚙️</span>
                 </a>
+
+                <!-- NUEVO: Botón de quejas -->
+                <button @click="openQueja = true"
+                        class="w-full text-left flex items-center px-4 py-2 hover:bg-gray-100">
+                    <span class="xs:hidden">Reportar Queja</span>
+                    <span class="xs:inline hidden">⚠️</span>
+                </button>
             </nav>
         </div>
 
@@ -87,19 +94,15 @@
             </div>
         </header>
 
-        <!-- ===============================
-             SELECT DE RUTAS
-        ==================================-->
+        <!-- SELECT DE RUTAS -->
         <div class="bg-white p-4 rounded-lg shadow-sm flex items-center space-x-2">
 
-            <!-- MULTISELECT DE RUTAS -->
             <select
                 id="select-rutas"
                 class="border rounded-lg px-3 py-2 text-sm min-w-[250px]"
                 multiple
             ></select>
 
-            <!-- BUSCADOR (futuro) -->
             <input
                 id="input-buscar"
                 type="text"
@@ -110,14 +113,12 @@
                 Mostrar rutas
             </button>
 
-            <!-- FILTROS -->
             <button id="btn-todos" class="px-4 py-2 bg-blue-500 text-white rounded-lg">Todos</button>
             <button id="btn-transporte" class="px-4 py-2 bg-green-500 text-white rounded-lg">Transporte</button>
             <button id="btn-basura" class="px-4 py-2 bg-yellow-500 text-white rounded-lg">Basura</button>
         </div>
 
         <div class="flex gap-4 h-[calc(100vh-200px)]">
-            <!-- Contenedor que usará Google Maps -->
             <div
                 class="flex-1 rounded-lg overflow-hidden shadow-lg bg-gray-300"
                 id="map"
@@ -146,13 +147,75 @@
         </div>
     </main>
 
+    <!-- ==========================
+         MODAL DE QUEJAS (NUEVO)
+    ============================ -->
+    <div 
+        x-show="openQueja"
+        x-transition
+        class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-[9999]"
+    >
+        <div class="bg-white p-6 rounded-xl shadow-lg w-96">
+
+            <h2 class="text-lg font-semibold mb-2">Reportar queja</h2>
+
+            <p class="text-sm text-gray-500 mb-4">
+                Describe tu observación respecto a alguna ruta o unidad.
+            </p>
+
+            <form id="form-queja"
+                @submit.prevent="openQueja=false; openGracias=true">
+                
+                <textarea name="mensaje"
+                    class="w-full border rounded-lg p-3 h-28"
+                    placeholder="Escribe aquí tu queja..."
+                    required></textarea>
+
+                <button
+                    type="submit"
+                    class="mt-4 w-full bg-[#3AB54A] hover:bg-green-600 text-white py-2 rounded-lg">
+                    Enviar queja
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==========================
+         MODAL DE GRACIAS (NUEVO)
+    ============================ -->
+    <div 
+        x-show="openGracias"
+        x-transition
+        class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-[9999]"
+    >
+        <div class="bg-white p-6 rounded-xl shadow-lg w-80 text-center">
+
+            <h2 class="text-lg font-semibold text-gray-800">
+                ¡Gracias por su observación!
+            </h2>
+
+            <p class="text-sm text-gray-600 mt-2">
+                Haremos todo lo posible por mejorar nuestros servicios.
+            </p>
+
+            <div class="text-4xl mt-4">😊</div>
+
+            <button
+                @click="openGracias=false"
+                class="mt-6 w-full bg-[#3AB54A] text-white py-2 rounded-lg"
+            >
+                Cerrar
+            </button>
+        </div>
+    </div>
+
     <!-- MODAL LOGOUT -->
     <div 
         x-show="openLogout"
         x-transition
         class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-[9999]"
     >
-        <div class="bg-white rounded-lg shadow-lg p-6 w-80 z-[10000]">
+        <div class="bg-white rounded-lg shadow-lg p-6 w-80">
             <h2 class="text-lg font-semibold text-gray-800">¿Cerrar sesión?</h2>
             <p class="text-sm text-gray-500 mt-2">¿Estás seguro de que deseas salir de tu cuenta?</p>
 

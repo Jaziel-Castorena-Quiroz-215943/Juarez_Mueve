@@ -3,7 +3,9 @@
 
     let rutasPaths = {};  // { [idRuta]: [ {lat, lng}, {lat, lng}, ... ] }
     let simInterval = null;  // para la simulación sobre rutas
-
+    let unidadMarkers = {}; // mapa unidadId -> marker
+    let updateIntervalMs = 5000; // 5 segundos
+    let updateTimer = null;
 
     // Datos en memoria
     let rutasData = [];            // Rutas con origen/destino (de rutas_mapa)
@@ -627,3 +629,168 @@ function iniciarSimulacionRutas() {
         });
     }, frameMs);
 }
+document.getElementById("form-queja").addEventListener("submit", async function(e) {
+    e.preventDefault();
+
+    const data = new FormData(this);
+
+    let respuesta = await fetch("{% url 'enviar_queja' %}", {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": "{{ csrf_token }}",
+        },
+        body: data
+    });
+
+    let json = await respuesta.json();
+
+    if (json.ok) {
+        openQueja = false;
+        openGracias = true;
+    }
+});
+
+// ----------------- ACTUALIZAR UNIDADES (fetch) -----------------
+function actualizarUnidades() {
+    const apiUrl = document.getElementById("map").dataset.apiUnidadesUrl;
+    if (!apiUrl) {
+        console.warn("No se encontró api_unidades URL en el mapa.");
+        return;
+    }
+
+    fetch(apiUrl)
+        .then(res => {
+            if (!res.ok) throw new Error("Respuesta no OK");
+            return res.json();
+        })
+        .then(data => {
+            // Esperamos estructura: { transportes: [...], basura: [...] }
+            unidadesData = data; // mantener compatibilidad
+            procesarUnidadesDesdeApi(data);
+        })
+        .catch(err => console.error("Error al obtener ubicaciones:", err));
+}
+
+/**
+ * Crea o actualiza marcadores a partir del JSON de la API.
+ * La API debe devolver para cada unidad al menos:
+ * { id, identificador, latitud, longitud, ruta: <idRuta>, tipo: 'transporte'|'basura', nombre?, numero_economico? }
+ */
+function procesarUnidadesDesdeApi(data) {
+    const transportes = data.transportes || [];
+    const basuras = data.basura || [];
+
+    // Procesar transportes
+    transportes.forEach(u => {
+        if (!u.id || !u.latitud || !u.longitud) return;
+
+        const pos = new google.maps.LatLng(u.latitud, u.longitud);
+
+        if (unidadMarkers[u.id]) {
+            // Ya existe: animamos a la nueva posición
+            moverAnimado(unidadMarkers[u.id], pos);
+            unidadMarkers[u.id]._rutaId = u.ruta || unidadMarkers[u.id]._rutaId;
+            unidadMarkers[u.id]._datos = u;
+        } else {
+            // Crear nuevo marcador
+            const marker = new google.maps.Marker({
+                position: pos,
+                map: map,
+                title: u.nombre || u.identificador || "Unidad transporte",
+                icon: {
+                    url: "https://maps.google.com/mapfiles/ms/icons/green-dot.png",
+                },
+            });
+
+            marker._unidadId = u.id;
+            marker._rutaId = u.ruta || null;
+            marker._datos = u;
+
+            marker.addListener("click", () => {
+                mostrarInfoUnidad(u, "transporte", marker);
+            });
+
+            unidadMarkers[u.id] = marker;
+            transporteMarkers.push(marker);
+        }
+    });
+
+    // Procesar basuras (similar)
+    basuras.forEach(b => {
+        if (!b.id || !b.latitud || !b.longitud) return;
+
+        const pos = new google.maps.LatLng(b.latitud, b.longitud);
+
+        if (unidadMarkers[b.id]) {
+            moverAnimado(unidadMarkers[b.id], pos);
+            unidadMarkers[b.id]._datos = b;
+        } else {
+            const marker = new google.maps.Marker({
+                position: pos,
+                map: map,
+                title: b.nombre || b.codigo_unidad || "Unidad de basura",
+                icon: {
+                    url: "https://maps.google.com/mapfiles/ms/icons/yellow-dot.png",
+                },
+            });
+
+            marker._unidadId = b.id;
+            marker._datos = b;
+
+            marker.addListener("click", () => {
+                mostrarInfoUnidad(b, "basura", marker);
+            });
+
+            unidadMarkers[b.id] = marker;
+            basuraMarkers.push(marker);
+        }
+    });
+
+    // Eliminar marcadores que ya no vienen en la API (opcional)
+    // construimos sets de ids actuales
+    const currentIds = new Set([
+        ...(transportes.map(t => t.id || [])),
+        ...(basuras.map(b => b.id || []))
+    ]);
+
+    Object.keys(unidadMarkers).forEach(key => {
+        const id = parseInt(key, 10);
+        if (!currentIds.has(id)) {
+            unidadMarkers[id].setMap(null);
+            delete unidadMarkers[id];
+        }
+    });
+
+    actualizarPanelEstadisticas(transporteMarkers.length, basuraMarkers.length);
+    // Si usas simulación por rutasPaths, la función iniciarSimulacionRutas() seguirá funcionando.
+}
+
+// ----------------- INICIAR / PARAR ACTUALIZACIONES PERIODICAS -----------------
+function startAutoUpdate() {
+    if (updateTimer) clearInterval(updateTimer);
+    updateTimer = setInterval(actualizarUnidades, updateIntervalMs);
+    // Hacemos una primera carga inmediata:
+    actualizarUnidades();
+}
+
+function stopAutoUpdate() {
+    if (updateTimer) {
+        clearInterval(updateTimer);
+        updateTimer = null;
+    }
+}
+
+// ----------------- ENLACE CON BOTÓN ACTUALIZAR -----------------
+// Llama a esto desde initMap (o ya lo puedes colocar dentro initMap donde defines el botón)
+const btnActualizar = document.getElementById("btn-actualizar");
+if (btnActualizar) {
+    btnActualizar.addEventListener("click", () => {
+        // Forzamos una actualización inmediata (y reiniciamos el timer)
+        actualizarUnidades();
+        if (!updateTimer) startAutoUpdate();
+    });
+}
+
+// Iniciar actualización automática al finalizar initMap
+// Añade al final de initMap():
+// startAutoUpdate();

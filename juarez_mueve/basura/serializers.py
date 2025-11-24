@@ -2,16 +2,24 @@ from rest_framework import serializers
 from .models import UnidadRecoleccion
 
 class UnidadRecoleccionSerializer(serializers.ModelSerializer):
-    estado_display = serializers.CharField(source='get_estado_display', read_only=True)
+    id = serializers.IntegerField(source='pk', read_only=True)
+    identificador = serializers.CharField(source='codigo_unidad')
+    lat = serializers.FloatField(source='latitud')
+    lng = serializers.FloatField(source='longitud')
+    activo = serializers.SerializerMethodField()
+
+    def get_activo(self, obj):
+        return obj.estado == "ACTIVO"
 
     class Meta:
         model = UnidadRecoleccion
         fields = [
-            'codigo_unidad',
+            'id',
+            'identificador',
             'zona',
-            'latitud',
-            'longitud',
+            'lat',
+            'lng',
+            'activo',
             'estado',
-            'estado_display',
             'ultima_actualizacion'
         ]
